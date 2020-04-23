@@ -13,7 +13,7 @@ List<BottomNavigationBarItem> getBottomNavBar(int _page){
             color: (_page == 1) ? Colors.blueAccent : Colors.grey),
 //        title: Container(height: 0.0),
         title: Text("Bookmarks", style: TextStyle(color: Colors.white),),
-        backgroundColor: Colors.black
+        backgroundColor: Colors.white
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.add,

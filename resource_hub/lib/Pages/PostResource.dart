@@ -9,9 +9,12 @@ class _PostResourceState extends State<PostResource> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Post your resource"),
+      ),
       body: Center(
         child: Container(
-          child: Text("POst Resources"),
+          child: Text("Post Resources"),
         ),
       ),
     );

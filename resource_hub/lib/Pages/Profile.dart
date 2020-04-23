@@ -9,6 +9,9 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Your profile"),
+      ),
       body: Center(
         child: Container(
           child: Text("My Profile"),
