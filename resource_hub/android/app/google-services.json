@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "949866375027",
+    "firebase_url": "https://resource-hub-6941f.firebaseio.com",
+    "project_id": "resource-hub-6941f",
+    "storage_bucket": "resource-hub-6941f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949866375027:android:db946ec6e32d04fb4b0706",
+        "android_client_info": {
+          "package_name": "com.app.resourcehub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "949866375027-2723c2i4ooeij9d7jjjkgvdq17nln5sr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.resourcehub",
+            "certificate_hash": "7c1cfdee67e54365f8823503fe7880d9c0d507a1"
+          }
+        },
+        {
+          "client_id": "949866375027-j38m06je355escjls7dpnvajcv8cdijj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7iOwr6EtfUuP1G4F1VSfjaqC5-RQXXb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "949866375027-j38m06je355escjls7dpnvajcv8cdijj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
