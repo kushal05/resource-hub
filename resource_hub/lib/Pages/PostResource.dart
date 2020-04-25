@@ -89,7 +89,8 @@ class _PostResourceState extends State<PostResource> {
                       child: MaterialButton(
                         onPressed: (){
                           setState(() {
-                            tagsList.add(tagController.value.text);
+                            if(tagController.value.text != "")
+                              tagsList.add(tagController.value.text);
                             tagController.clear();
                           });
                         },
