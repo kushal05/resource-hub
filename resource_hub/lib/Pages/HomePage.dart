@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
+import '../Globals.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   @override
@@ -7,12 +10,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  ListView recommendedResources() {
-    return ListView.builder(
-        itemCount: 20,
-        itemBuilder: (context, index) {
-          return Text("Resource ${index + 1}");
-        });
+
+  ScrollController _controller = ScrollController();
+  var localPosts;
+
+  void showSnackBar(BuildContext context){
+    var snackBar = SnackBar(
+      content: Text("Resources have been updates!"),
+      action: SnackBarAction(
+        label: "Show updates",
+        onPressed: (){
+          _controller.jumpTo(0.0);
+        },
+      ),
+    );
+
+    Scaffold.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -66,59 +79,91 @@ class _HomePageState extends State<HomePage> {
                   flex: 10,
                   child: Container(
                     color: Colors.greenAccent,
-                    child: ListView.builder(
-                      itemBuilder: (context, index) {
-                        return Container(
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                            elevation: 2,
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Title ${index + 1}",
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                    child: StreamBuilder(
+                      stream: Firestore.instance.collection('Posts').orderBy('Timestamp', descending: true).snapshots(),
+                      builder: (context,snapshot){
+                        debugPrint("Snapshot length is:${snapshot.data.documents.length}");
+                        if(!snapshot.hasData){
+                          return Center(child: Text("Loading..."));
+                        }
+                        else{
+                          posts=snapshot.data.documents;
+                          postsLength=snapshot.data.documents.length;
+
+                          Timer.periodic(Duration(seconds: 5), (Timer t){
+                            if(postsLength!=snapshot.data.documents.length){
+                              postsLength=snapshot.data.documents.length;
+                              showSnackBar(context);
+                            }
+                          });
+
+                          return ListView.builder(
+                            itemCount:snapshot.data.documents.length,
+                            controller: _controller,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0)),
+                                  elevation: 2,
+                                  child: Column(
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "${snapshot.data.documents[index]['Title']}",
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: RichText(
+                                            text:TextSpan(
+                                            text: "${snapshot.data.documents[index]['Link']}",
+                                            style: new TextStyle(color: Colors.blue),
+                                            // recognizer: TapGestureRecognizer()
+                                            //   ..onTap = () { launch('https://docs.flutter.io/flutter/services/UrlLauncher-class.html');
+                                            // },
+                                          )
+                                        )
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text("#${snapshot.data.documents[index]['Tags'][0]}"),
+                                        // child: ListView.builder(
+                                        //   scrollDirection: Axis.horizontal,
+                                        //   itemCount: snapshot.data.documents[index]['Tags'].length,
+                                        //   itemBuilder: (context,ind){
+                                        //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                        //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                        //   }
+                                        // )
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: <Widget>[
+                                          MaterialButton(
+                                            onPressed: () {},
+                                            child: Text("Kudos"),
+                                          ),
+                                          MaterialButton(
+                                            onPressed: () {},
+                                            child: Text("Comment"),
+                                          ),
+                                          MaterialButton(
+                                            onPressed: () {},
+                                            child: Text("Share"),
+                                          )
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Link: https://resourcehub.com/posts/${index + 1}",
-                                    style: TextStyle(fontWeight: FontWeight.normal),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "#tag${index + 1} #tag${index + 2}",
-                                    style: TextStyle(fontWeight: FontWeight.normal),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Kudos"),
-                                    ),
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Comment"),
-                                    ),
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Share"),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      itemCount: 100,
+                              );
+                            },
+                          );
+                        }
+                      }
                     ),
                   ),
                 ),

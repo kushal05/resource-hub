@@ -1,0 +1,2 @@
+var posts;
+var postsLength;
