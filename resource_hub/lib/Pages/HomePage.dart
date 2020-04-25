@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../Globals.dart';
+import 'WebViewPage.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -123,7 +124,12 @@ class _HomePageState extends State<HomePage> {
                                             text: "${snapshot.data.documents[index]['Link']}",
                                             style: new TextStyle(color: Colors.blue),
                                              recognizer: TapGestureRecognizer()
-                                               ..onTap = () { launch('${snapshot.data.documents[index]['Link']}');
+                                               ..onTap = () {
+                                                 Navigator.of(context).push(MaterialPageRoute(
+                                                  builder: (BuildContext context) => MyWebView(
+                                                        title: "${snapshot.data.documents[index]['Title']}",
+                                                        selectedUrl: "${snapshot.data.documents[index]['Link']}",
+                                                      )));
                                              },
                                           )
                                         )
