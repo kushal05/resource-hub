@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../Globals.dart';
 import 'dart:async';
 
@@ -82,7 +84,6 @@ class _HomePageState extends State<HomePage> {
                     child: StreamBuilder(
                       stream: Firestore.instance.collection('Posts').orderBy('Timestamp', descending: true).snapshots(),
                       builder: (context,snapshot){
-                        debugPrint("Snapshot length is:${snapshot.data.documents.length}");
                         if(!snapshot.hasData){
                           return Center(child: Text("Loading..."));
                         }
@@ -121,9 +122,9 @@ class _HomePageState extends State<HomePage> {
                                             text:TextSpan(
                                             text: "${snapshot.data.documents[index]['Link']}",
                                             style: new TextStyle(color: Colors.blue),
-                                            // recognizer: TapGestureRecognizer()
-                                            //   ..onTap = () { launch('https://docs.flutter.io/flutter/services/UrlLauncher-class.html');
-                                            // },
+                                             recognizer: TapGestureRecognizer()
+                                               ..onTap = () { launch('${snapshot.data.documents[index]['Link']}');
+                                             },
                                           )
                                         )
                                       ),
