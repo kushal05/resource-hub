@@ -5,9 +5,9 @@ import 'package:fancy_bottom_navigation/paint/half_clipper.dart';
 import 'package:fancy_bottom_navigation/paint/half_painter.dart';
 import 'package:flutter/material.dart';
 
-const double CIRCLE_SIZE = 60;
+const double CIRCLE_SIZE = 55;
 const double ARC_HEIGHT = 70;
-const double ARC_WIDTH = 90;
+const double ARC_WIDTH = 80;
 const double CIRCLE_OUTLINE = 10;
 const double SHADOW_ALLOWANCE = 20;
 const double BAR_HEIGHT = 60;
