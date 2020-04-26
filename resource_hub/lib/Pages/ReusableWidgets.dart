@@ -1,3 +1,4 @@
+import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
 
 List<BottomNavigationBarItem> getBottomNavBar(int _page){
@@ -34,3 +35,21 @@ List<BottomNavigationBarItem> getBottomNavBar(int _page){
     )
   ];
 }
+
+
+//List<TabItem> tabItems = List.of([
+//  new TabItem(Icons.home, "Home", Colors.blue, labelStyle: TextStyle(color: Colors.blue)),
+//  new TabItem(Icons.bookmark, "Bookmarks", Colors.orange, labelStyle: TextStyle(color: Colors.orange)),
+//  new TabItem(Icons.add_circle_outline, "Add", Colors.red, labelStyle: TextStyle(color: Colors.red)),
+//  new TabItem(Icons.face, "Profile", Colors.cyan, labelStyle: TextStyle(color: Colors.cyan)),
+//  new TabItem(Icons.settings, "Settings", Colors.green, labelStyle: TextStyle(color: Colors.green)),
+//]);
+
+
+List<TabData> fancyTabItems = [
+  TabData(iconData: Icons.home, title: "Home"),
+  TabData(iconData: Icons.bookmark, title: "Bookmarks"),
+  TabData(iconData: Icons.add_circle_outline, title: "Add"),
+  TabData(iconData: Icons.face, title: "Profile"),
+  TabData(iconData: Icons.settings, title: "Settings"),
+];
