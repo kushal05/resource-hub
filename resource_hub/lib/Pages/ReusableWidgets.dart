@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:circular_bottom_navigation/tab_item.dart';
 
 List<BottomNavigationBarItem> getBottomNavBar(int _page){
   return <BottomNavigationBarItem>[
@@ -34,3 +35,12 @@ List<BottomNavigationBarItem> getBottomNavBar(int _page){
     )
   ];
 }
+
+
+List<TabItem> tabItems = List.of([
+  new TabItem(Icons.home, "Home", Colors.blue, labelStyle: TextStyle(color: Colors.blue)),
+  new TabItem(Icons.bookmark, "Bookmarks", Colors.orange, labelStyle: TextStyle(color: Colors.orange)),
+  new TabItem(Icons.add_circle_outline, "Add", Colors.red, labelStyle: TextStyle(color: Colors.red)),
+  new TabItem(Icons.face, "Profile", Colors.cyan, labelStyle: TextStyle(color: Colors.cyan)),
+  new TabItem(Icons.settings, "Settings", Colors.green, labelStyle: TextStyle(color: Colors.green)),
+]);

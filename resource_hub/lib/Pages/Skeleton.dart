@@ -1,3 +1,4 @@
+import 'package:circular_bottom_navigation/circular_bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Pages/Bookmarks.dart';
 import 'package:resourcehub/Pages/HomePage.dart';
@@ -13,6 +14,7 @@ class Skeleton extends StatefulWidget {
 
 class _SkeletonState extends State<Skeleton> {
   int _page = 0;
+  CircularBottomNavigationController _navigationController = new CircularBottomNavigationController(0);
 
   List<Widget> _allPages = [
     HomePage(),
@@ -28,16 +30,24 @@ class _SkeletonState extends State<Skeleton> {
       length: 2,
       child: Scaffold(
         body: _allPages[_page],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _page,
-          items: getBottomNavBar(_page),
-          onTap: (int page) {
-            setState(() {
-              _page = page;
-            });
-          },
-        ),
+      bottomNavigationBar: CircularBottomNavigation(
+        tabItems,
+        controller: _navigationController,
+        selectedCallback: (int index){
+          setState(() {
+            _page = index;
+          });
+        },
+        circleSize: 55,
+        iconsSize: 25
+      ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _navigationController.dispose();
+    super.dispose();
   }
 }
