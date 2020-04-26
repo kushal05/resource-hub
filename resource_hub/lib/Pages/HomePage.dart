@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../Globals.dart';
+import 'WebViewPage.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -80,7 +80,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   flex: 10,
                   child: Container(
-                    color: Colors.greenAccent,
+                    color: Colors.blue[100],
                     child: StreamBuilder(
                       stream: Firestore.instance.collection('Posts').orderBy('Timestamp', descending: true).snapshots(),
                       builder: (context,snapshot){
@@ -138,22 +138,31 @@ class _HomePageState extends State<HomePage> {
                                             text: "${snapshot.data.documents[index]['Link']}",
                                             style: new TextStyle(color: Colors.blue),
                                              recognizer: TapGestureRecognizer()
-                                               ..onTap = () { launch('${snapshot.data.documents[index]['Link']}');
+                                               ..onTap = () {
+                                                 Navigator.of(context).push(MaterialPageRoute(
+                                                  builder: (BuildContext context) => MyWebView(
+                                                        title: "${snapshot.data.documents[index]['Title']}",
+                                                        selectedUrl: "${snapshot.data.documents[index]['Link']}",
+                                                      )));
                                              },
                                           )
                                         )
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: Text("#${snapshot.data.documents[index]['Tags'][0]}"),
-                                        // child: ListView.builder(
-                                        //   scrollDirection: Axis.horizontal,
-                                        //   itemCount: snapshot.data.documents[index]['Tags'].length,
-                                        //   itemBuilder: (context,ind){
-                                        //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                        //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                        //   }
-                                        // )
+                                        child: Center(
+                                          child: Container(
+                                              child: Text("#${snapshot.data.documents[index]['Tags'][0]}"),
+//                                            child: Container(),                                            // child: ListView.builder(
+                                            //   scrollDirection: Axis.horizontal,
+                                            //   itemCount: snapshot.data.documents[index]['Tags'].length,
+                                            //   itemBuilder: (context,ind){
+                                            //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                            //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                            //   }
+                                            // )
+                                          ),
+                                        ),
                                       ),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceAround,
