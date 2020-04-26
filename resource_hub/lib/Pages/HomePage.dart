@@ -111,10 +111,25 @@ class _HomePageState extends State<HomePage> {
                                     children: <Widget>[
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          "${snapshot.data.documents[index]['Title']}",
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
+                                        child: Row(
+                                          children: <Widget>[
+                                            GestureDetector(
+                                              behavior: HitTestBehavior.translucent,
+                                              onTap: () {
+                                                debugPrint("bookmared");
+                                              },
+                                              child: Padding(
+                                                padding: EdgeInsets.only(right: 20),
+                                                child: Icon(Icons.star_border),
+                                              )
+                                            ),
+                                            Text(
+                                              "${snapshot.data.documents[index]['Title']}",
+                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                            )
+                                          ],
+                                        )
+
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
