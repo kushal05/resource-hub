@@ -5,6 +5,7 @@ import 'package:resourcehub/Pages/MyResources.dart';
 import '../Globals.dart';
 import 'WebViewPage.dart';
 import 'dart:async';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -12,6 +13,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  List<String> tags = [];
+
 
   initState(){
     super.initState();
@@ -26,6 +30,10 @@ class _HomePageState extends State<HomePage> {
       var temp = doc.documents;
 
       for(var p in temp){
+        for(var tag in p.data['Tags']){
+          print("Tags are: $tag for title: ${p.data['Title']}");
+          tags.add(tag);
+        }
         posts.add({
           'Title':p.data['Title'],
           'Link':p.data['Link'],
@@ -98,7 +106,7 @@ class _HomePageState extends State<HomePage> {
                     decoration: blueGradient,
                     child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: 20,
+                        itemCount: tags.length,
                         itemBuilder: (context, index) {
                           return Center(
                               child: Padding(
@@ -110,132 +118,116 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Text("Resource ${index + 1}"),
+                                      child: Text(tags[index]),
                                     )),
                               ));
                         }),
                   ),
                 ),
-                Expanded(
-                  flex: 10,
-                  child: Container(
-                    color: Colors.blue[100],
-                    child: StreamBuilder(
-                      stream: Firestore.instance.collection('Posts').orderBy('Timestamp', descending: true).snapshots(),
-                      builder: (context,snapshot){
-                        if(!snapshot.hasData){
-                          return Center(child: Text("Loading..."));
-                        }
-                        else{
-                          posts=snapshot.data.documents;
-                          postsLength=snapshot.data.documents.length;
-
-                          Timer.periodic(Duration(seconds: 5), (Timer t){
-                            if(postsLength!=snapshot.data.documents.length){
-                              postsLength=snapshot.data.documents.length;
-                              showSnackBar(context);
-                            }
-                          });
-
-                          return ListView.builder(
-                            itemCount:snapshot.data.documents.length,
-                            controller: _controller,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                child: Card(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12.0)),
-                                  elevation: 2,
-                                  child: Column(
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Container(
-                                              width: 30,
-                                            ),
-                                            Text(
-                                              "${snapshot.data.documents[index]['Title']}",
-                                              style: TextStyle(fontWeight: FontWeight.bold),
-                                            ),
-                                            GestureDetector(
-                                                behavior: HitTestBehavior.translucent,
-                                                onTap: () {
-                                                  debugPrint("bookmarked");
-                                                  getUserBookmarks();
-                                                },
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(right: 20),
-                                                  child: Icon(Icons.star_border),
-                                                )
-                                            ),
-                                          ],
+        Expanded(
+            flex: 10,
+            child: Container(
+                color: Colors.blue[100],
+                child:LiquidPullToRefresh(
+                    onRefresh: (){
+                      return Future<void>((){
+                        posts=null;
+                        getPosts();
+                      });
+                    },
+                    child:(posts==null)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
+                      itemCount:postsLength,
+                      controller: _controller,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0)),
+                            elevation: 2,
+                            child: Column(
+                              children: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Container(
+                                      width: 30,
+                                    ),
+                                    Text(
+                                      "${posts[index]['Title']}",
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    GestureDetector(
+                                        behavior: HitTestBehavior.translucent,
+                                        onTap: () {
+                                          debugPrint("bookmarked");
+                                          getUserBookmarks();
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.only(right: 20),
+                                          child: Icon(Icons.star_border),
                                         )
-
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: RichText(
-                                            text:TextSpan(
-                                            text: "${snapshot.data.documents[index]['Link']}",
-                                            style: new TextStyle(color: Colors.blue),
-                                             recognizer: TapGestureRecognizer()
-                                               ..onTap = () {
-                                                 Navigator.of(context).push(MaterialPageRoute(
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: RichText(
+                                        text:TextSpan(
+                                          text: "${posts[index]['Link']}",
+                                          style: new TextStyle(color: Colors.blue),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              Navigator.of(context).push(MaterialPageRoute(
                                                   builder: (BuildContext context) => MyWebView(
-                                                        title: "${snapshot.data.documents[index]['Title']}",
-                                                        selectedUrl: "${snapshot.data.documents[index]['Link']}",
-                                                      )));
-                                             },
-                                          )
+                                                    title: "${posts[index]['Title']}",
+                                                    selectedUrl: "${posts[index]['Link']}",
+                                                  )));
+                                            },
                                         )
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Center(
-                                          child: Container(
-                                              child: Text("#${snapshot.data.documents[index]['Tags'][0]}"),
+                                    )
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Container(
+                                      child: Text("#${posts[index]['Tags'][0]}"),
 //                                            child: Container(),                                            // child: ListView.builder(
-                                            //   scrollDirection: Axis.horizontal,
-                                            //   itemCount: snapshot.data.documents[index]['Tags'].length,
-                                            //   itemBuilder: (context,ind){
-                                            //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                            //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                            //   }
-                                            // )
-                                          ),
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                        children: <Widget>[
-                                          MaterialButton(
-                                            onPressed: () {},
-                                            child: Text("Kudos"),
-                                          ),
-                                          MaterialButton(
-                                            onPressed: () {},
-                                            child: Text("Comment"),
-                                          ),
-                                          MaterialButton(
-                                            onPressed: () {},
-                                            child: Text("Share"),
-                                          )
-                                        ],
-                                      ),
-                                    ],
+                                      //   scrollDirection: Axis.horizontal,
+                                      //   itemCount: snapshot.data.documents[index]['Tags'].length,
+                                      //   itemBuilder: (context,ind){
+                                      //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                      //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                      //   }
+                                      // )
+                                    ),
                                   ),
                                 ),
-                              );
-                            },
-                          );
-                        }
-                      }
-                    ),
-                  ),
-                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    MaterialButton(
+                                      onPressed: () {},
+                                      child: Text("Kudos"),
+                                    ),
+                                    MaterialButton(
+                                      onPressed: () {},
+                                      child: Text("Comment"),
+                                    ),
+                                    MaterialButton(
+                                      onPressed: () {},
+                                      child: Text("Share"),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                )
+            )
+        ),
               ],
             ),
             MyResources()
@@ -252,3 +244,5 @@ class _HomePageState extends State<HomePage> {
     return data;
   }
 }
+
+
