@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:share/share.dart';
+import 'dart:async';
+import 'dart:io';
 
 class Settings extends StatefulWidget {
   @override
@@ -103,7 +106,11 @@ class _SettingsState extends State<Settings> {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  debugPrint("acc pressed");
+                  final RenderBox box = context.findRenderObject();
+
+                  Share.share("Hey! Checkout this cool new app called ResourceHub",
+                      subject: "Hey! Checkout this cool new app called ResourceHub",
+                      sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
                 },
                 child: ListTile(
                     leading: Icon(
