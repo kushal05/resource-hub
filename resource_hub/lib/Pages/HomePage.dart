@@ -116,7 +116,8 @@ class _HomePageState extends State<HomePage> {
                                             GestureDetector(
                                               behavior: HitTestBehavior.translucent,
                                               onTap: () {
-                                                debugPrint("bookmared");
+                                                debugPrint("bookmarked");
+                                                debugPrint(Firestore.instance.collection("Users").where('user_id',isEqualTo: 1).getDocuments().toString());
                                               },
                                               child: Padding(
                                                 padding: EdgeInsets.only(right: 20),
