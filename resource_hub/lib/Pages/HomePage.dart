@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:resourcehub/Pages/MyResources.dart';
 import '../Globals.dart';
 import 'WebViewPage.dart';
 import 'dart:async';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,22 +16,44 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  initState(){
+    super.initState();
+    debugPrint("##### Init state called");
+    getPosts();
+  }
+
+  void getPosts(){
+  Firestore.instance.collection('Posts').getDocuments().then((doc){
+
+    posts = [];
+    var temp = doc.documents;
+
+    for(var p in temp){
+      posts.add({
+        'Title':p.data['Title'],
+        'Link':p.data['Link'],
+        'Description':p.data['Description'],
+        'Username':p.data['Username'],
+        'UserID':p.data['UserID'],
+        'Tags':p.data['Tags'],
+        'Likes':p.data['Likes'],
+        'Timestamp':DateTime.parse(p.data['Timestamp'].toDate().toString()),
+      });
+    }
+    posts.sort((a,b) {
+    var adate = a['Timestamp'].millisecondsSinceEpoch;
+     var bdate = b['Timestamp'].millisecondsSinceEpoch;
+     return -1*int.parse(adate.compareTo(bdate).toString());
+  });   
+    setState(() {
+      postsLength=doc.documents.length;
+      debugPrint("getPosts called");
+    });
+  });
+}
+
   ScrollController _controller = ScrollController();
   var localPosts;
-
-  void showSnackBar(BuildContext context){
-    var snackBar = SnackBar(
-      content: Text("Resources have been updates!"),
-      action: SnackBarAction(
-        label: "Show updates",
-        onPressed: (){
-          _controller.jumpTo(0.0);
-        },
-      ),
-    );
-
-    Scaffold.of(context).showSnackBar(snackBar);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,25 +106,15 @@ class _HomePageState extends State<HomePage> {
                   flex: 10,
                   child: Container(
                     color: Colors.blue[100],
-                    child: StreamBuilder(
-                      stream: Firestore.instance.collection('Posts').orderBy('Timestamp', descending: true).snapshots(),
-                      builder: (context,snapshot){
-                        if(!snapshot.hasData){
-                          return Center(child: Text("Loading..."));
-                        }
-                        else{
-                          posts=snapshot.data.documents;
-                          postsLength=snapshot.data.documents.length;
-
-                          Timer.periodic(Duration(seconds: 5), (Timer t){
-                            if(postsLength!=snapshot.data.documents.length){
-                              postsLength=snapshot.data.documents.length;
-                              showSnackBar(context);
-                            }
-                          });
-
-                          return ListView.builder(
-                            itemCount:snapshot.data.documents.length,
+                    child:LiquidPullToRefresh(
+                      onRefresh: (){
+                        return Future<void>((){
+                          posts=null;
+                          getPosts();
+                        });
+                      },
+                      child:(posts==null)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
+                            itemCount:postsLength,
                             controller: _controller,
                             itemBuilder: (context, index) {
                               return Container(
@@ -112,7 +127,7 @@ class _HomePageState extends State<HomePage> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          "${snapshot.data.documents[index]['Title']}",
+                                          "${posts[index]['Title']}",
                                           style: TextStyle(fontWeight: FontWeight.bold),
                                         ),
                                       ),
@@ -120,14 +135,14 @@ class _HomePageState extends State<HomePage> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: RichText(
                                             text:TextSpan(
-                                            text: "${snapshot.data.documents[index]['Link']}",
+                                            text: "${posts[index]['Link']}",
                                             style: new TextStyle(color: Colors.blue),
                                              recognizer: TapGestureRecognizer()
                                                ..onTap = () {
                                                  Navigator.of(context).push(MaterialPageRoute(
                                                   builder: (BuildContext context) => MyWebView(
-                                                        title: "${snapshot.data.documents[index]['Title']}",
-                                                        selectedUrl: "${snapshot.data.documents[index]['Link']}",
+                                                        title: "${posts[index]['Title']}",
+                                                        selectedUrl: "${posts[index]['Link']}",
                                                       )));
                                              },
                                           )
@@ -137,7 +152,7 @@ class _HomePageState extends State<HomePage> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Center(
                                           child: Container(
-                                              child: Text("#${snapshot.data.documents[index]['Tags'][0]}"),
+                                              child: Text("#${posts[index]['Tags'][0]}"),
 //                                            child: Container(),                                            // child: ListView.builder(
                                             //   scrollDirection: Axis.horizontal,
                                             //   itemCount: snapshot.data.documents[index]['Tags'].length,
@@ -171,13 +186,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               );
                             },
-                          );
-                        }
-                      }
-                    ),
-                  ),
-                ),
-              ],
+                          )
+                    )
+                  )
+               ),
+              ]
             ),
             MyResources()
           ],
