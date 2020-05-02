@@ -6,6 +6,7 @@ import '../Globals.dart';
 import 'WebViewPage.dart';
 import 'dart:async';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:share/share.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -213,10 +214,7 @@ class _HomePageState extends State<HomePage> {
                                       onPressed: () {},
                                       child: Text("Comment"),
                                     ),
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Share"),
-                                    )
+                                    new ShareButton(),
                                   ],
                                 ),
                               ],
@@ -245,4 +243,21 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+class ShareButton extends StatelessWidget {
+  const ShareButton({
+    Key key,
+  }) : super(key: key);
 
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+      onPressed: () {
+        final RenderBox box = context.findRenderObject();
+        Share.share("Hey! Checkout this cool article link",
+            subject: "Hey! Checkout this cool article",
+            sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+      },
+      child: Text("Share"),
+    );
+  }
+}
