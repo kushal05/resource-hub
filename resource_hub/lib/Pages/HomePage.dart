@@ -81,6 +81,7 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text("Resource Hub"),
+          backgroundColor: Theme.of(context).primaryColor,
           actions: <Widget>[
             Padding(
               padding: const EdgeInsets.only(right: 18.0),
@@ -103,7 +104,7 @@ class _HomePageState extends State<HomePage> {
                   flex: 1,
                   child: Container(
                     height: 200,
-                    decoration: blueGradient,
+                    color: Theme.of(context).canvasColor,
                     child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: tags.length,
@@ -113,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.white30,
+                                      color: Theme.of(context).unselectedWidgetColor,
                                       borderRadius: BorderRadius.circular(15.0)
                                     ),
                                     child: Padding(
@@ -127,7 +128,7 @@ class _HomePageState extends State<HomePage> {
         Expanded(
             flex: 10,
             child: Container(
-                color: Colors.blue[100],
+                color: Theme.of(context).canvasColor,
                 child:LiquidPullToRefresh(
                     onRefresh: (){
                       return Future<void>((){
@@ -141,6 +142,7 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         return Container(
                           child: Card(
+                            color: Theme.of(context).cardColor,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10.0)),
                             elevation: 2,
@@ -154,7 +156,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     Text(
                                       "${posts[index]['Title']}",
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87,fontSize: 18.0),
                                     ),
                                     GestureDetector(
                                         behavior: HitTestBehavior.translucent,
@@ -190,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Center(
                                     child: Container(
-                                      child: Text("#${posts[index]['Tags'][0]}"),
+                                      child: Text("#${posts[index]['Tags'][0]}",style: TextStyle(color: Colors.black87,),),
 //                                            child: Container(),                                            // child: ListView.builder(
                                       //   scrollDirection: Axis.horizontal,
                                       //   itemCount: snapshot.data.documents[index]['Tags'].length,

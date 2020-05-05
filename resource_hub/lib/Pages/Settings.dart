@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:resourcehub/Globals.dart';
 import 'package:share/share.dart';
-import 'dart:async';
-import 'dart:io';
+import '../main.dart';
 
 class Settings extends StatefulWidget {
   @override
@@ -28,6 +28,30 @@ class _SettingsState extends State<Settings> {
           child: ListView(
             padding: EdgeInsets.fromLTRB(8, 8, 8, 0),
             children: <Widget>[
+
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  debugPrint("acc pressed");
+                },
+                child: ListTile(
+                  leading:  Icon(
+                      Icons.brightness_2,
+                      color: icon_color
+                  ),
+                  trailing: Switch(
+                    value: darkThemeEnabled, 
+                    onChanged: (value){
+                      darkThemeEnabled=value;
+                      setState(() {
+                      });
+                      AppBuilder.of(context).rebuild();
+                    },
+                  ),
+                  title: Text("Dark Mode"),
+                  ),
+              ),
+
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {

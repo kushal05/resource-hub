@@ -1,5 +1,6 @@
 import 'package:resourcehub/External/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:resourcehub/Globals.dart';
 import 'package:resourcehub/Pages/Bookmarks.dart';
 import 'package:resourcehub/Pages/HomePage.dart';
 import 'package:resourcehub/Pages/PostResource.dart';
@@ -42,6 +43,9 @@ class _SkeletonState extends State<Skeleton> {
           });
         },
         textColor: Colors.blue,
+        barBackgroundColor: Theme.of(context).bottomAppBarColor,
+        inactiveIconColor: Colors.blue,
+        activeIconColor: darkThemeEnabled?Colors.blue:Colors.white,
       ),
       ),
     );
