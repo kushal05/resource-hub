@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:resourcehub/Globals.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,10 +11,33 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  var icon_color= Colors.blue.shade200;
+
+
+  Color pickerColor = Color(0xff443a49);
+  Color currentColor = Color(0xff443a49);
+
+    Map<int, Color> color =
+  {
+    50:Color.fromRGBO(136,14,79, .1),
+    100:Color.fromRGBO(136,14,79, .2),
+    200:Color.fromRGBO(136,14,79, .3),
+    300:Color.fromRGBO(136,14,79, .4),
+    400:Color.fromRGBO(136,14,79, .5),
+    500:Color.fromRGBO(136,14,79, .6),
+    600:Color.fromRGBO(136,14,79, .7),
+    700:Color.fromRGBO(136,14,79, .8),
+    800:Color.fromRGBO(136,14,79, .9),
+    900:Color.fromRGBO(136,14,79, 1),
+  };
+
+  // ValueChanged<Color> callback
+  void changeColor(Color color) {
+    setState(() => pickerColor = color);
+  }
 
   @override
   Widget build(BuildContext context) {
+      var iconColor= Theme.of(context).accentColor;
     return Scaffold(
       appBar: AppBar(
         leading: Icon(Icons.arrow_back),
@@ -39,7 +63,7 @@ class _SettingsState extends State<Settings> {
                 child: ListTile(
                   leading:  Icon(
                       Icons.brightness_2,
-                      color: icon_color
+                      color: iconColor
                   ),
                   trailing: Switch(
                     value: darkThemeEnabled, 
@@ -59,12 +83,51 @@ class _SettingsState extends State<Settings> {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
+                  showDialog(
+                    context: context,
+                    child: AlertDialog(
+                      title: const Text('Pick a color!'),
+                      content: SingleChildScrollView(
+                        child: BlockPicker(
+                          pickerColor: pickerColor,
+                          onColorChanged: changeColor,
+                        ),
+                      ),
+                      actions: <Widget>[
+                        FlatButton(
+                          child: const Text('Choose'),
+                          onPressed: () {
+                            currentColor = pickerColor;
+                            accentColor = pickerColor;
+                            debugPrint("${pickerColor.value}");
+                            setState((){
+                            });
+                            Navigator.of(context).pop();
+                            AppBuilder.of(context).rebuild();
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: ListTile(
+                  leading:  Icon(
+                      Icons.brightness_1,
+                      color: iconColor
+                  ),
+                  title: Text("Accent color"),
+                ),
+              ),
+
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
                   debugPrint("acc pressed");
                 },
                 child: ListTile(
                   leading:  Icon(
                       Icons.build,
-                      color: icon_color
+                      color: iconColor
                   ),
                   title: Text("Account"),
                   subtitle: Text("change account, privacy"),
@@ -79,7 +142,7 @@ class _SettingsState extends State<Settings> {
                 child: ListTile(
                   leading: Icon(
                       Icons.exit_to_app,
-                      color: icon_color
+                      color: iconColor
                   ),
                   title: Text("Logout"),
                   subtitle: Text("change account, privacy"),
@@ -94,7 +157,7 @@ class _SettingsState extends State<Settings> {
                 child: ListTile(
                   leading: Icon(
                       Icons.notifications,
-                      color: icon_color
+                      color: iconColor
                   ),
                   title: Text("Notifications"),
                   subtitle: Text("turn on and off app notifications"),
@@ -109,7 +172,7 @@ class _SettingsState extends State<Settings> {
                 child: ListTile(
                   leading: Icon(
                       Icons.bug_report,
-                      color: icon_color
+                      color: iconColor
                   ),
                   title: Text("Bug Report"),
                   subtitle: Text("change account, privacy"),
@@ -124,7 +187,7 @@ class _SettingsState extends State<Settings> {
                 child: ListTile(
                   leading: Icon(
                     Icons.help,
-                    color: icon_color,
+                    color: iconColor,
                   ),
                   title: Text("Help"),
                   subtitle: Text("FAQ,contact us,privacy policy"),
@@ -143,7 +206,7 @@ class _SettingsState extends State<Settings> {
                 child: ListTile(
                     leading: Icon(
                       Icons.people,
-                      color: icon_color,
+                      color: iconColor,
                     ),
                     title: Text("Invite a friend")
                 ),

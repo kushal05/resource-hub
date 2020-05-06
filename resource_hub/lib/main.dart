@@ -37,9 +37,9 @@ class AppBuilder extends StatefulWidget {
   @override
   AppBuilderState createState() => new AppBuilderState();
 
-  @deprecated
+
   static AppBuilderState of(BuildContext context) {
-    return context.ancestorStateOfType(const TypeMatcher<AppBuilderState>());
+    return context.findAncestorStateOfType<AppBuilderState>();
   }
 }
 

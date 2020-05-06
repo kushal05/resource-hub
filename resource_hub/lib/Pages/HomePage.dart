@@ -93,6 +93,7 @@ class _HomePageState extends State<HomePage> {
           ],
           bottom: TabBar(
             isScrollable: false,
+            indicatorColor: Theme.of(context).accentColor,
             tabs: [
               Tab(text: "Home", ),
               Tab(text: "My Resources", )
@@ -181,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                                     child: RichText(
                                         text:TextSpan(
                                           text: "${posts[index]['Link']}",
-                                          style: new TextStyle(color: Colors.blue),
+                                          style: new TextStyle(color: Theme.of(context).accentColor),
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () {
                                               Navigator.of(context).push(MaterialPageRoute(
