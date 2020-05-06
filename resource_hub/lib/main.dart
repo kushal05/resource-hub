@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Globals.dart';
 import 'package:resourcehub/Pages/Skeleton.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
-void main() => runApp(MyApp());
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.getInstance().then((prefs){
+    darkThemeEnabled = prefs.getBool('darkTheme');
+    runApp(MyApp());
+  });
+}
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -29,6 +37,7 @@ class AppBuilder extends StatefulWidget {
   @override
   AppBuilderState createState() => new AppBuilderState();
 
+  @deprecated
   static AppBuilderState of(BuildContext context) {
     return context.ancestorStateOfType(const TypeMatcher<AppBuilderState>());
   }

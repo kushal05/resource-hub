@@ -55,4 +55,5 @@ class _SkeletonState extends State<Skeleton> {
   void dispose() {
     super.dispose();
   }
+
 }

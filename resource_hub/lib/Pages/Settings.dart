@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Globals.dart';
 import 'package:share/share.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 
 class Settings extends StatefulWidget {
@@ -10,6 +11,7 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   var icon_color= Colors.blue.shade200;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +46,9 @@ class _SettingsState extends State<Settings> {
                     onChanged: (value){
                       darkThemeEnabled=value;
                       setState(() {
+                        setTheme(darkThemeEnabled);
                       });
+                      // ignore: deprecated_member_use_from_same_package
                       AppBuilder.of(context).rebuild();
                     },
                   ),
@@ -149,5 +153,11 @@ class _SettingsState extends State<Settings> {
           ),
         )
     );
+  }
+
+  void setTheme(bool darkThemeEnabled) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('darkTheme', darkThemeEnabled);
+    print("Setting dark theme as: $darkThemeEnabled");
   }
 }

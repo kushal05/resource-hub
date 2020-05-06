@@ -9,7 +9,7 @@ const double CIRCLE_SIZE = 55;
 const double ARC_HEIGHT = 70;
 const double ARC_WIDTH = 0;
 const double CIRCLE_OUTLINE = 13;
-const double SHADOW_ALLOWANCE = 25;
+const double SHADOW_ALLOWANCE = 20;
 const double BAR_HEIGHT = 60;
 
 class FancyBottomNavigation extends StatefulWidget {
