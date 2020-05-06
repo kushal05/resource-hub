@@ -8,6 +8,8 @@ import 'dart:async';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:share/share.dart';
 
+var lastRefreshedTime;
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -26,7 +28,6 @@ class _HomePageState extends State<HomePage> {
 
   void getPosts(){
     Firestore.instance.collection('Posts').getDocuments().then((doc){
-
       posts = [];
       var temp = doc.documents;
 
@@ -35,6 +36,7 @@ class _HomePageState extends State<HomePage> {
           print("Tags are: $tag for title: ${p.data['Title']}");
           tags.add(tag);
         }
+
         posts.add({
           'Title':p.data['Title'],
           'Link':p.data['Link'],
@@ -134,6 +136,8 @@ class _HomePageState extends State<HomePage> {
                     onRefresh: (){
                       return Future<void>((){
                         posts=null;
+                        lastRefreshedTime = DateTime.now();
+                        print("--------Pulled to refresh at $lastRefreshedTime--------");
                         getPosts();
                       });
                     },

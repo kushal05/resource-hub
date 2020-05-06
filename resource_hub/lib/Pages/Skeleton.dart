@@ -42,7 +42,7 @@ class _SkeletonState extends State<Skeleton> {
             _page = index;
           });
         },
-        textColor: Colors.blue,
+        textColor: Theme.of(context).textSelectionColor,
         barBackgroundColor: Theme.of(context).bottomAppBarColor,
         inactiveIconColor: Colors.blue,
         activeIconColor: darkThemeEnabled?Colors.blue:Colors.white,
