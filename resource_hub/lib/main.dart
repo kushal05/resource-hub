@@ -8,6 +8,7 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.getInstance().then((prefs){
     darkThemeEnabled = prefs.getBool('darkTheme');
+    darkThemeEnabled = (darkThemeEnabled==null)?false:darkThemeEnabled;
     runApp(MyApp());
   });
 }
