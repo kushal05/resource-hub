@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 
 const double CIRCLE_SIZE = 55;
 const double ARC_HEIGHT = 70;
-const double ARC_WIDTH = 80;
-const double CIRCLE_OUTLINE = 10;
+const double ARC_WIDTH = 0;
+const double CIRCLE_OUTLINE = 13;
 const double SHADOW_ALLOWANCE = 20;
 const double BAR_HEIGHT = 60;
 
@@ -172,7 +172,8 @@ class FancyBottomNavigationState extends State<FancyBottomNavigation>
                                       width: CIRCLE_SIZE + CIRCLE_OUTLINE,
                                       height: CIRCLE_SIZE + CIRCLE_OUTLINE,
                                       decoration: BoxDecoration(
-                                          color: Colors.white,
+//                                          color: Color.fromARGB(31, 41, 56, 10),
+                                          color: barBackgroundColor,
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(

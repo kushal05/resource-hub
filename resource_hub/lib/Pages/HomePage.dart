@@ -8,6 +8,8 @@ import 'dart:async';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:share/share.dart';
 
+var lastRefreshedTime;
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -26,7 +28,6 @@ class _HomePageState extends State<HomePage> {
 
   void getPosts(){
     Firestore.instance.collection('Posts').getDocuments().then((doc){
-
       posts = [];
       var temp = doc.documents;
 
@@ -35,6 +36,7 @@ class _HomePageState extends State<HomePage> {
           print("Tags are: $tag for title: ${p.data['Title']}");
           tags.add(tag);
         }
+
         posts.add({
           'Title':p.data['Title'],
           'Link':p.data['Link'],
@@ -91,6 +93,7 @@ class _HomePageState extends State<HomePage> {
           ],
           bottom: TabBar(
             isScrollable: false,
+            indicatorColor: Theme.of(context).accentColor,
             tabs: [
               Tab(text: "Home", ),
               Tab(text: "My Resources", )
@@ -134,6 +137,8 @@ class _HomePageState extends State<HomePage> {
                     onRefresh: (){
                       return Future<void>((){
                         posts=null;
+                        lastRefreshedTime = DateTime.now();
+                        print("--------Pulled to refresh at $lastRefreshedTime--------");
                         getPosts();
                       });
                     },
@@ -177,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                                     child: RichText(
                                         text:TextSpan(
                                           text: "${posts[index]['Link']}",
-                                          style: new TextStyle(color: Colors.blue),
+                                          style: new TextStyle(color: Theme.of(context).accentColor),
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () {
                                               Navigator.of(context).push(MaterialPageRoute(

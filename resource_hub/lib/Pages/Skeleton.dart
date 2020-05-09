@@ -42,10 +42,10 @@ class _SkeletonState extends State<Skeleton> {
             _page = index;
           });
         },
-        textColor: Colors.blue,
+        textColor: accentColor,//Theme.of(context).textSelectionColor,
         barBackgroundColor: Theme.of(context).bottomAppBarColor,
-        inactiveIconColor: Colors.blue,
-        activeIconColor: darkThemeEnabled?Colors.blue:Colors.white,
+        inactiveIconColor: Theme.of(context).accentColor,
+        activeIconColor: darkThemeEnabled?Theme.of(context).accentColor:Colors.white,
       ),
       ),
     );
@@ -55,4 +55,5 @@ class _SkeletonState extends State<Skeleton> {
   void dispose() {
     super.dispose();
   }
+
 }
