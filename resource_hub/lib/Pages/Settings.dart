@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Globals.dart';
+import 'package:resourcehub/Pages/HelpPage.dart';
 import 'package:share/share.dart';
 import '../main.dart';
 
@@ -115,7 +116,11 @@ class _SettingsState extends State<Settings> {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  debugPrint("acc pressed");
+                  debugPrint("Help pressed");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HelpPage()),
+                  );
                 },
                 child: ListTile(
                   leading: Icon(
