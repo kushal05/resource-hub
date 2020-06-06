@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,19 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     debugPrint("##### Init state called");
     getPosts();
+    getBookmarks();
+  }
+  
+  void getBookmarks(){
+    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
+      bookmarks = new HashSet<int>();
+      var arr= data.documents[0].data['bookmarks'];
+      for(var p in arr){
+        bookmarks.add(p);
+      }
+      print(bookmarks.toString());
+//      print(data.documents[0].data['bookmarks']);
+    });
   }
 
   void getPosts(){
@@ -38,6 +53,7 @@ class _HomePageState extends State<HomePage> {
         }
 
         posts.add({
+          'post_id':p.data['post_id'],
           'Title':p.data['Title'],
           'Link':p.data['Link'],
           'Description':p.data['Description'],
@@ -168,11 +184,14 @@ class _HomePageState extends State<HomePage> {
                                         behavior: HitTestBehavior.translucent,
                                         onTap: () {
                                           debugPrint("bookmarked");
-                                          getUserBookmarks();
+                                          pressBookmark(posts[index]['post_id']);
                                         },
                                         child: Padding(
                                           padding: EdgeInsets.only(right: 20),
-                                          child: Icon(Icons.star_border),
+                                          child: Icon(
+                                              Icons.star_border,
+                                              color: bookmarks.contains(posts[index]['post_id'])?Colors.amberAccent:Colors.black,
+                                          ),
                                         )
                                     ),
                                   ],
@@ -242,11 +261,35 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<dynamic> getUserBookmarks() async{
-    var data = Firestore.instance.collection("Users").where('user_id',isEqualTo: 1).getDocuments().then((data){
-      print("Data is: ${data.documents[0].data}");
-    });
-    return data;
+  Future<dynamic> pressBookmark(int post_id) async{
+    if(bookmarks.contains(post_id)){
+      bookmarks.remove(post_id);
+      setState(() {
+
+      });
+      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"bookmarks": FieldValue.arrayRemove(list)});
+      });
+    }
+    else{
+      setState(() {
+
+      });
+      bookmarks.add(post_id);
+      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"bookmarks": FieldValue.arrayUnion(list)});
+      });
+    }
+
+    return;
   }
 }
 
