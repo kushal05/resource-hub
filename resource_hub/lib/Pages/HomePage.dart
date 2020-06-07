@@ -31,12 +31,12 @@ class _HomePageState extends State<HomePage> {
   
   void getBookmarks(){
     Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
-      bookmarks = new HashSet<int>();
+      bookmarkedPostids = new HashSet<int>();
       var arr= data.documents[0].data['bookmarks'];
       for(var p in arr){
-        bookmarks.add(p);
+        bookmarkedPostids.add(p);
       }
-      print(bookmarks.toString());
+      print(bookmarkedPostids.toString());
 //      print(data.documents[0].data['bookmarks']);
     });
   }
@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                                           padding: EdgeInsets.only(right: 20),
                                           child: Icon(
                                               Icons.star_border,
-                                              color: bookmarks.contains(posts[index]['post_id'])?Colors.amberAccent:Colors.black,
+                                              color: bookmarkedPostids.contains(posts[index]['post_id'])?Colors.amberAccent:Colors.black,
                                           ),
                                         )
                                     ),
@@ -262,8 +262,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<dynamic> pressBookmark(int post_id) async{
-    if(bookmarks.contains(post_id)){
-      bookmarks.remove(post_id);
+    if(bookmarkedPostids.contains(post_id)){
+      bookmarkedPostids.remove(post_id);
       setState(() {
 
       });
@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
 
       });
-      bookmarks.add(post_id);
+      bookmarkedPostids.add(post_id);
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 

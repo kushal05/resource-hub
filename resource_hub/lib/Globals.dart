@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 var posts;
 var postsLength;
 var lastRefreshedTime;
-HashSet bookmarks;
+HashSet bookmarkedPostids;
+var bookmarkedPosts;
+var bookmarkedPostsLength;
 
 var accentColor = Color(0xff42a5f5);
 
