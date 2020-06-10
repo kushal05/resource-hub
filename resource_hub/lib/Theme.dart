@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resourcehub/Globals.dart';
 
 class Fonts {
   static String get body => "Lato";
@@ -33,6 +34,7 @@ ThemeData lightMode(){
       canvasColor: Color.fromRGBO(162, 208, 242, 1),
       bottomAppBarColor: Colors.white,
       cardColor: Colors.white,
+      accentColor: accentColor,
       textSelectionColor: Colors.blue
   );
 }
@@ -44,6 +46,7 @@ ThemeData darkMode(){
       canvasColor:Color.fromRGBO(84, 93, 107, 1),
       bottomAppBarColor: Color.fromRGBO(31, 41, 56, 1),
       cardColor: Color.fromRGBO(189, 202, 222, 1),
+      accentColor: accentColor,
       textSelectionColor: Colors.white
   );
 }
