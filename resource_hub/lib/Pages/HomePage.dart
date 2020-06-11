@@ -27,6 +27,18 @@ class _HomePageState extends State<HomePage> {
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
+    getLikedPosts();
+  }
+  void getLikedPosts(){
+    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
+      likedPosts = new HashSet<int>();
+      var arr= data.documents[0].data['liked'];
+      for(var p in arr){
+        likedPosts.add(p);
+      }
+      print(likedPosts.toString());
+//      print(data.documents[0].data['bookmarks']);
+    });
   }
   
   void getBookmarks(){
@@ -232,10 +244,36 @@ class _HomePageState extends State<HomePage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: <Widget>[
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Kudos"),
+                                    GestureDetector(
+                                        behavior: HitTestBehavior.translucent,
+                                        onTap: () {
+                                          debugPrint("Liked");
+                                          pressLike(posts[index]['post_id'], index);
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.only(right: 20),
+                                          child: Row(
+                                            children: <Widget>[
+                                            Icon(
+                                                likedPosts.contains(posts[index]['post_id'])?Icons.favorite:Icons.favorite_border,
+                                                size: 20,
+                                              color: likedPosts.contains(posts[index]['post_id'])?Colors.pink.shade300:Colors.black
+                                            ),
+                                            Text(
+                                              '  '+posts[index]['Likes'].toString(),
+                                                style: new TextStyle(
+                                                  fontSize: 12
+                                                ),
+                                            )
+                                            ],
+                                          )
+                                        )
                                     ),
+//                                    MaterialButton(
+//                                      onPressed: () {},
+//                                      child: Text("Kudos"),
+//
+//                                    ),
                                     MaterialButton(
                                       onPressed: () {},
                                       child: Text("Comment"),
@@ -260,6 +298,46 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  Future<dynamic> pressLike(int post_id, int index) async{
+    if(likedPosts.contains(post_id)){
+      likedPosts.remove(post_id);
+      posts[index]['Likes']--;
+      setState(() {
+
+      });
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayRemove(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+    else{
+      setState(() {
+
+      });
+      likedPosts.add(post_id);
+      posts[index]['Likes']++;
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayUnion(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+
+    return;
+  }
 
   Future<dynamic> pressBookmark(int post_id) async{
     if(bookmarkedPostids.contains(post_id)){
@@ -267,7 +345,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
 
       });
-      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
         var list = List<int>();
@@ -280,7 +358,7 @@ class _HomePageState extends State<HomePage> {
 
       });
       bookmarkedPostids.add(post_id);
-      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
         var list = List<int>();
