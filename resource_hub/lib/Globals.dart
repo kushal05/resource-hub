@@ -6,7 +6,6 @@ var posts;
 var postsLength;
 var lastRefreshedTime;
 HashSet bookmarkedPostids;
-HashSet likedPosts;
 var bookmarkedPosts;
 var bookmarkedPostsLength;
 
