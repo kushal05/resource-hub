@@ -95,8 +95,9 @@ class _BookmarksState extends State<Bookmarks> {
 
   Future<dynamic> pressBookmark(int post_id) async{
     if(bookmarkedPostids.contains(post_id)){
-      bookmarkedPostids.remove(post_id);
+
       setState(() {
+        bookmarkedPostids.remove(post_id);
       });
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
@@ -107,8 +108,9 @@ class _BookmarksState extends State<Bookmarks> {
     }
     else{
       setState(() {
+        bookmarkedPostids.add(post_id);
       });
-      bookmarkedPostids.add(post_id);
+
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
         var list = List<int>();
@@ -121,10 +123,10 @@ class _BookmarksState extends State<Bookmarks> {
   }
   Future<dynamic> pressLike(int post_id, int index) async{
     if(likedPosts.contains(post_id)){
-      likedPosts.remove(post_id);
-      posts[index]['Likes']--;
-      setState(() {
 
+      setState(() {
+        likedPosts.remove(post_id);
+        --posts[index]['Likes'];
       });
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
@@ -140,10 +142,10 @@ class _BookmarksState extends State<Bookmarks> {
     }
     else{
       setState(() {
-
+        likedPosts.add(post_id);
+        ++posts[index]['Likes'];
       });
-      likedPosts.add(post_id);
-      posts[index]['Likes']++;
+
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 

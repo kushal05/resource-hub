@@ -300,10 +300,10 @@ class _HomePageState extends State<HomePage> {
   }
   Future<dynamic> pressLike(int post_id, int index) async{
     if(likedPosts.contains(post_id)){
-      likedPosts.remove(post_id);
-      posts[index]['Likes']--;
-      setState(() {
 
+      setState(() {
+        likedPosts.remove(post_id);
+        --posts[index]['Likes'];
       });
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
@@ -319,10 +319,10 @@ class _HomePageState extends State<HomePage> {
     }
     else{
       setState(() {
-
+        likedPosts.add(post_id);
+        ++posts[index]['Likes'];
       });
-      likedPosts.add(post_id);
-      posts[index]['Likes']++;
+
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
@@ -341,9 +341,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<dynamic> pressBookmark(int post_id) async{
     if(bookmarkedPostids.contains(post_id)){
-      bookmarkedPostids.remove(post_id);
-      setState(() {
 
+      setState(() {
+        bookmarkedPostids.remove(post_id);
       });
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
@@ -355,9 +355,9 @@ class _HomePageState extends State<HomePage> {
     }
     else{
       setState(() {
-
+        bookmarkedPostids.add(post_id);
       });
-      bookmarkedPostids.add(post_id);
+
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
