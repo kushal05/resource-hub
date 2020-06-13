@@ -20,6 +20,17 @@ class _BookmarksState extends State<Bookmarks> {
     super.initState();
     debugPrint("##### Init state called");
     getBookmarks();
+    getLikedPosts();
+  }
+  void getLikedPosts(){
+    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
+      likedPosts = new HashSet<int>();
+      var arr= data.documents[0].data['liked'];
+      for(var p in arr){
+        likedPosts.add(p);
+      }
+      print(likedPosts.toString());
+    });
   }
 
   void getBookmarks(){
@@ -108,7 +119,46 @@ class _BookmarksState extends State<Bookmarks> {
 
     return;
   }
+  Future<dynamic> pressLike(int post_id, int index) async{
+    if(likedPosts.contains(post_id)){
+      likedPosts.remove(post_id);
+      posts[index]['Likes']--;
+      setState(() {
 
+      });
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayRemove(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+    else{
+      setState(() {
+
+      });
+      likedPosts.add(post_id);
+      posts[index]['Likes']++;
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayUnion(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+
+    return;
+  }
 
 
   @override
@@ -202,9 +252,30 @@ class _BookmarksState extends State<Bookmarks> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
-                              MaterialButton(
-                                onPressed: () {},
-                                child: Text("Kudos"),
+                              GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  onTap: () {
+                                    debugPrint("Liked");
+                                    pressLike(posts[index]['post_id'], index);
+                                  },
+                                  child: Padding(
+                                      padding: EdgeInsets.only(right: 20),
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(
+                                              likedPosts.contains(posts[index]['post_id'])?Icons.favorite:Icons.favorite_border,
+                                              size: 20,
+                                              color: likedPosts.contains(posts[index]['post_id'])?Colors.pink.shade300:Colors.black
+                                          ),
+                                          Text(
+                                            '  '+posts[index]['Likes'].toString(),
+                                            style: new TextStyle(
+                                                fontSize: 12
+                                            ),
+                                          )
+                                        ],
+                                      )
+                                  )
                               ),
                               MaterialButton(
                                 onPressed: () {},
@@ -224,6 +295,9 @@ class _BookmarksState extends State<Bookmarks> {
     );
   }
 }
+
+
+
 class ShareButton extends StatelessWidget {
   const ShareButton({
     Key key,
