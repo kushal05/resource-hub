@@ -27,18 +27,6 @@ class _HomePageState extends State<HomePage> {
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
-    getLikedPosts();
-  }
-  void getLikedPosts(){
-    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
-      likedPosts = new HashSet<int>();
-      var arr= data.documents[0].data['liked'];
-      for(var p in arr){
-        likedPosts.add(p);
-      }
-      print(likedPosts.toString());
-//      print(data.documents[0].data['bookmarks']);
-    });
   }
   
   void getBookmarks(){
@@ -244,36 +232,10 @@ class _HomePageState extends State<HomePage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: <Widget>[
-                                    GestureDetector(
-                                        behavior: HitTestBehavior.translucent,
-                                        onTap: () {
-                                          debugPrint("Liked");
-                                          pressLike(posts[index]['post_id'], index);
-                                        },
-                                        child: Padding(
-                                          padding: EdgeInsets.only(right: 20),
-                                          child: Row(
-                                            children: <Widget>[
-                                            Icon(
-                                                likedPosts.contains(posts[index]['post_id'])?Icons.favorite:Icons.favorite_border,
-                                                size: 20,
-                                              color: likedPosts.contains(posts[index]['post_id'])?Colors.pink.shade300:Colors.black
-                                            ),
-                                            Text(
-                                              '  '+posts[index]['Likes'].toString(),
-                                                style: new TextStyle(
-                                                  fontSize: 12
-                                                ),
-                                            )
-                                            ],
-                                          )
-                                        )
+                                    MaterialButton(
+                                      onPressed: () {},
+                                      child: Text("Kudos"),
                                     ),
-//                                    MaterialButton(
-//                                      onPressed: () {},
-//                                      child: Text("Kudos"),
-//
-//                                    ),
                                     MaterialButton(
                                       onPressed: () {},
                                       child: Text("Comment"),
@@ -345,7 +307,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         bookmarkedPostids.remove(post_id);
       });
-      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
         var list = List<int>();
@@ -357,8 +319,9 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         bookmarkedPostids.add(post_id);
       });
-
       Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+      bookmarkedPostids.add(post_id);
+      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
         var list = List<int>();
