@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Logic/GlobalFunctions.dart';
@@ -22,13 +23,39 @@ class _HomePageState extends State<HomePage> {
 
   List<String> tags = [];
 
+  BannerAd _bannerAd;
+
+  static const MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
+    //keywords: <String>['education', 'research','programming','computer science','coding','motivation'],
+    childDirected: true,
+    nonPersonalizedAds: true,
+  );
+
+  BannerAd createBannerAd() {
+    return BannerAd(
+      adUnitId: "ca-app-pub-3696046528116630/4431045587",
+      size: AdSize.banner,
+      targetingInfo: targetingInfo,
+      listener: (MobileAdEvent event) {
+        print("BannerAd event $event");
+      },
+    );
+  }
+
 
   initState(){
     super.initState();
+    FirebaseAdMob.instance.initialize(appId: "ca-app-pub-3696046528116630~8597327786");
+    _bannerAd = createBannerAd()..load()..show(anchorOffset: 50);
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
     getLikedPosts();
+  }
+
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
   }
 
   void getLikedPosts(){
