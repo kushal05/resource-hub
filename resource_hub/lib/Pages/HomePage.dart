@@ -10,6 +10,7 @@ import 'WebViewPage.dart';
 import 'dart:async';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:share/share.dart';
+import 'package:admob_flutter/admob_flutter.dart';
 
 var lastRefreshedTime;
 
@@ -25,6 +26,7 @@ class _HomePageState extends State<HomePage> {
 
   initState(){
     super.initState();
+    Admob.initialize("ca-app-pub-3696046528116630~8597327786");
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
@@ -287,6 +289,10 @@ class _HomePageState extends State<HomePage> {
                         )
                     )
                 ),
+                AdmobBanner(
+                  adUnitId: "ca-app-pub-3696046528116630/4431045587",
+                  adSize: AdmobBannerSize.BANNER,
+                )
               ],
             ),
             MyResources()
