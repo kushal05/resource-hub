@@ -11,6 +11,7 @@ import 'dart:async';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:share/share.dart';
 import 'package:admob_flutter/admob_flutter.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 
 var lastRefreshedTime;
 
@@ -23,14 +24,35 @@ class _HomePageState extends State<HomePage> {
 
   List<String> tags = [];
 
+  InterstitialAd _interstitialAd;
+
+  InterstitialAd createInterstitialAd() {
+    return InterstitialAd(
+      adUnitId: "ca-app-pub-3696046528116630/4539281823",
+      listener: (MobileAdEvent event) {
+        print("InterstitialAd event $event");
+      },
+    );
+  }
 
   initState(){
     super.initState();
     Admob.initialize("ca-app-pub-3696046528116630~8597327786");
+    FirebaseAdMob.instance.initialize(appId: "ca-app-pub-3696046528116630~8597327786");
+    _interstitialAd?.dispose();
+    _interstitialAd = createInterstitialAd()..load();
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
     getLikedPosts();
+    Timer(Duration(seconds: 60),(){
+      _interstitialAd.show();
+    });
+  }
+
+  void dispose(){
+    _interstitialAd?.dispose();
+    super.dispose();
   }
 
   void getLikedPosts(){
