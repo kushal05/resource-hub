@@ -23,8 +23,6 @@ class _HomePageState extends State<HomePage> {
 
   List<String> tags = [];
 
-  AdmobInterstitial interstitialAd;
-
 
   initState(){
     super.initState();
@@ -33,18 +31,6 @@ class _HomePageState extends State<HomePage> {
     getPosts();
     getBookmarks();
     getLikedPosts();
-    interstitialAd = AdmobInterstitial(
-      adUnitId: "ca-app-pub-3696046528116630/4539281823",
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        print("Admob event: $event");
-        if (event == AdmobAdEvent.closed)
-          interstitialAd.load();
-      },
-    );
-    Timer.periodic(Duration(minutes: 1), (timer) {
-      interstitialAd.load();
-      print("Ad loaded");
-    });
   }
 
   void getLikedPosts(){
