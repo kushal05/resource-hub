@@ -118,6 +118,7 @@ class _HomePageState extends State<HomePage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: Text(
             "Welcome $username",
             style: TextStyle(fontSize: 18),

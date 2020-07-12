@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatelessWidget {
 
-  GoogleAuth _googleAuth = GoogleAuth();
+  Auth _auth = Auth();
+  TextEditingController _loginUsername, _loginPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -100,21 +101,24 @@ class Login extends StatelessWidget {
                                   border: Border(bottom: BorderSide(color: Colors.grey[100]))
                               ),
                               child: TextField(
+                                controller: _loginUsername,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
-                                    hintText: "Email or Phone number",
-                                    hintStyle: TextStyle(color: Colors.grey[400])
+                                    hintText: "Username",
+                                    hintStyle: TextStyle(color: Colors.grey[400]),
                                 ),
                               ),
                             ),
                             Container(
                               padding: EdgeInsets.all(8.0),
                               child: TextField(
+                                controller: _loginPassword,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: "Password",
-                                    hintStyle: TextStyle(color: Colors.grey[400])
+                                    hintStyle: TextStyle(color: Colors.grey[400]),
                                 ),
+                                obscureText: true,
                               ),
                             )
                           ],
@@ -138,19 +142,35 @@ class Login extends StatelessWidget {
                       child: FlatButton(
                         color: Colors.transparent,
                           onPressed: () {
-                            _googleAuth.signInWithGoogle().whenComplete(() async {
-                              SharedPreferences pref =
-                              await SharedPreferences.getInstance();
-                              pref.setString('userName', userName).then((value) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return Skeleton();
-                                    },
-                                  ),
-                                );
-                              });
-                            });
+                             _auth.context = context;
+                             _auth.loginType = LoginType.System;
+                             _auth.username = _loginUsername.text;
+                             _auth.password = _loginPassword.text;
+                             _auth.login();
+                          },
+                          child: Text("Login", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),),
+                      )),
+                      SizedBox(height: 30,),
+                      FadeAnimation(2, Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(
+                                colors: [
+                                  Color.fromRGBO(143, 148, 251, 1),
+                                  Color.fromRGBO(143, 148, 251, .6),
+                                ]
+                            )
+                        ),
+//                        child: Center(
+//                          child: Text("Login", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+//                        ),
+                      child: FlatButton(
+                        color: Colors.transparent,
+                          onPressed: () {
+                             _auth.context = context;
+                             _auth.loginType = LoginType.Google;
+                             _auth.login();
                           },
                           child: Text("Login with Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),),
                       )),
