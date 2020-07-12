@@ -12,3 +12,5 @@ var bookmarkedPostsLength;
 var accentColor = Color(0xff42a5f5);
 
 bool darkThemeEnabled = false;
+
+var userName;

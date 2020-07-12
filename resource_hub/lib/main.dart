@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Globals.dart';
-import 'package:resourcehub/Pages/Skeleton.dart';
+import 'package:resourcehub/Pages/SplashScreen.dart';
 import 'package:resourcehub/Theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       return new MaterialApp(
         title: 'Flutter Demo',
         theme: darkThemeEnabled ? darkMode() : lightMode(),
-        home: Skeleton(),
+        home: SplashScreen(),
         debugShowCheckedModeBanner: false,
       );
     });

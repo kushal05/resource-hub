@@ -3,7 +3,10 @@ import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:resourcehub/Pages/Login.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
+import 'package:resourcehub/Theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Globals.dart';
 import 'WebViewPage.dart';
 import 'dart:async';
@@ -18,50 +21,66 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   List<String> tags = [];
+  String username = "";
 
-
-  initState(){
+  void initState() {
     super.initState();
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
-  }
-  
-  void getBookmarks(){
-    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
-      bookmarkedPostids = new HashSet<int>();
-      var arr= data.documents[0].data['bookmarks'];
-      for(var p in arr){
-        bookmarkedPostids.add(p);
-      }
-      print(bookmarkedPostids.toString());
-//      print(data.documents[0].data['bookmarks']);
-    });
+    getUserName();
   }
 
-  void getPosts(){
-    Firestore.instance.collection('Posts').getDocuments().then((doc){
+  void getBookmarks() {
+    Firestore.instance.collection('Users')
+      ..where('UserID', isEqualTo: '1').getDocuments().then((data) {
+        bookmarkedPostids = new HashSet<int>();
+        var arr = data.documents[0].data['bookmarks'];
+        for (var p in arr) {
+          bookmarkedPostids.add(p);
+        }
+        print(bookmarkedPostids.toString());
+//      print(data.documents[0].data['bookmarks']);
+      });
+  }
+
+  Future<String> getUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var temp = prefs.getString('userName');
+    setState(() {
+      username = temp;
+    });
+    print("\n\n\nUser name in the prefs is: $username\n\n\n");
+    if(username == null){
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return Login();
+        },
+      ));
+    }
+  }
+
+  void getPosts() {
+    Firestore.instance.collection('Posts').getDocuments().then((doc) {
       posts = [];
       var temp = doc.documents;
 
-      for(var p in temp){
-        for(var tag in p.data['Tags']){
-          print("Tags are: $tag for title: ${p.data['Title']}");
+      for (var p in temp) {
+        for (var tag in p.data['Tags']) {
           tags.add(tag);
         }
 
         posts.add({
-          'post_id':p.data['post_id'],
-          'Title':p.data['Title'],
-          'Link':p.data['Link'],
-          'Description':p.data['Description'],
-          'Username':p.data['Username'],
-          'UserID':p.data['UserID'],
-          'Tags':p.data['Tags'],
-          'Likes':p.data['Likes'],
-          'Timestamp':DateTime.parse(p.data['Timestamp'].toDate().toString()),
+          'post_id': p.data['post_id'],
+          'Title': p.data['Title'],
+          'Link': p.data['Link'],
+          'Description': p.data['Description'],
+          'Username': p.data['Username'],
+          'UserID': p.data['UserID'],
+          'Tags': p.data['Tags'],
+          'Likes': p.data['Likes'],
+          'Timestamp': DateTime.parse(p.data['Timestamp'].toDate().toString()),
         });
       }
       posts.sort((a,b) {
@@ -99,7 +118,10 @@ class _HomePageState extends State<HomePage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Resource Hub"),
+          title: Text(
+            "Welcome $username",
+            style: TextStyle(fontSize: 18),
+          ),
           backgroundColor: Theme.of(context).primaryColor,
           actions: <Widget>[
             Padding(
@@ -111,8 +133,12 @@ class _HomePageState extends State<HomePage> {
             isScrollable: false,
             indicatorColor: Theme.of(context).accentColor,
             tabs: [
-              Tab(text: "Home", ),
-              Tab(text: "My Resources", )
+              Tab(
+                text: "Home",
+              ),
+              Tab(
+                text: "My Resources",
+              )
             ],
           ),
         ),
@@ -145,79 +171,127 @@ class _HomePageState extends State<HomePage> {
                         }),
                   ),
                 ),
-        Expanded(
-            flex: 10,
-            child: Container(
-                color: Theme.of(context).canvasColor,
-                child:LiquidPullToRefresh(
-                    onRefresh: (){
-                      return Future<void>((){
-                        posts=null;
-                        lastRefreshedTime = DateTime.now();
-                        print("--------Pulled to refresh at $lastRefreshedTime--------");
-                        getPosts();
-                      });
-                    },
-                    child:(posts==null)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
-                      itemCount:postsLength,
-                      controller: _controller,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          child: Card(
-                            color: Theme.of(context).cardColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                            elevation: 2,
-                            child: Column(
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 30,
-                                    ),
-                                    Text(
-                                      "${posts[index]['Title']}",
-                                      style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87,fontSize: 18.0),
-                                    ),
-                                    GestureDetector(
-                                        behavior: HitTestBehavior.translucent,
-                                        onTap: () {
-                                          debugPrint("bookmarked");
-                                          pressBookmark(posts[index]['post_id']);
-                                        },
-                                        child: Padding(
-                                          padding: EdgeInsets.only(right: 20),
-                                          child: Icon(
-                                              Icons.star_border,
-                                              color: bookmarkedPostids.contains(posts[index]['post_id'])?Colors.amberAccent:Colors.black,
-                                          ),
+                Expanded(
+                    flex: 10,
+                    child: Container(
+                        color: Theme.of(context).canvasColor,
+                        child: LiquidPullToRefresh(
+                            onRefresh: () {
+                              return Future<void>(() {
+                                posts = null;
+                                lastRefreshedTime = DateTime.now();
+                                print(
+                                    "--------Pulled to refresh at $lastRefreshedTime--------");
+                                getPosts();
+                              });
+                            },
+                            child: (posts == null)
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                        Center(
+                                            child: Text(
+                                          "Getting posts for you..",
+                                          style: TextStyles.title,
+                                        )),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: CircularProgressIndicator(),
                                         )
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: RichText(
-                                        text:TextSpan(
-                                          text: "${posts[index]['Link']}",
-                                          style: new TextStyle(color: Theme.of(context).accentColor),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () {
-                                              Navigator.of(context).push(MaterialPageRoute(
-                                                  builder: (BuildContext context) => MyWebView(
-                                                    title: "${posts[index]['Title']}",
-                                                    selectedUrl: "${posts[index]['Link']}",
-                                                  )));
-                                            },
-                                        )
-                                    )
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Center(
-                                    child: Container(
-                                      child: Text("#${posts[index]['Tags'][0]}",style: TextStyle(color: Colors.black87,),),
+                                      ])
+                                : ListView.builder(
+                                    itemCount: postsLength,
+                                    controller: _controller,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        child: Card(
+                                          color: Theme.of(context).cardColor,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0)),
+                                          elevation: 2,
+                                          child: Column(
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Container(
+                                                    width: 30,
+                                                  ),
+                                                  Text(
+                                                    "${posts[index]['Title']}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: Colors.black87,
+                                                        fontSize: 18.0),
+                                                  ),
+                                                  GestureDetector(
+                                                      behavior: HitTestBehavior
+                                                          .translucent,
+                                                      onTap: () {
+                                                        debugPrint(
+                                                            "bookmarked");
+                                                        pressBookmark(
+                                                            posts[index]
+                                                                ['post_id']);
+                                                      },
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                right: 20),
+                                                        child: Icon(
+                                                          Icons.star_border,
+                                                          color: bookmarkedPostids
+                                                                  .contains(posts[
+                                                                          index]
+                                                                      [
+                                                                      'post_id'])
+                                                              ? Colors
+                                                                  .amberAccent
+                                                              : Colors.black,
+                                                        ),
+                                                      )),
+                                                ],
+                                              ),
+                                              Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: RichText(
+                                                      text: TextSpan(
+                                                    text:
+                                                        "${posts[index]['Link']}",
+                                                    style: new TextStyle(
+                                                        color: Theme.of(context)
+                                                            .accentColor),
+                                                    recognizer:
+                                                        TapGestureRecognizer()
+                                                          ..onTap = () {
+                                                            Navigator.of(context).push(
+                                                                MaterialPageRoute(
+                                                                    builder: (BuildContext
+                                                                            context) =>
+                                                                        MyWebView(
+                                                                          title:
+                                                                              "${posts[index]['Title']}",
+                                                                          selectedUrl:
+                                                                              "${posts[index]['Link']}",
+                                                                        )));
+                                                          },
+                                                  ))),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Container(
+                                                    child: Text(
+                                                      "#${posts[index]['Tags'][0]}",
+                                                      style: TextStyle(
+                                                        color: Colors.black87,
+                                                      ),
+                                                    ),
 //                                            child: Container(),                                            // child: ListView.builder(
                                       //   scrollDirection: Axis.horizontal,
                                       //   itemCount: snapshot.data.documents[index]['Tags'].length,
@@ -261,31 +335,40 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<dynamic> pressBookmark(int post_id) async{
-    if(bookmarkedPostids.contains(post_id)){
+  Future<dynamic> pressBookmark(int post_id) async {
+    if (bookmarkedPostids.contains(post_id)) {
       bookmarkedPostids.remove(post_id);
-      setState(() {
-
-      });
-      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+      setState(() {});
+      var data = Firestore.instance
+          .collection("Users")
+          .where('UserID', isEqualTo: '1')
+          .getDocuments()
+          .then((data) {
         print("Data is: ${data.documents[0].documentID}");
 
         var list = List<int>();
         list.add(post_id);
-        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"bookmarks": FieldValue.arrayRemove(list)});
+        Firestore.instance
+            .collection('Users')
+            .document(data.documents[0].documentID)
+            .updateData({"bookmarks": FieldValue.arrayRemove(list)});
       });
-    }
-    else{
-      setState(() {
-
-      });
+    } else {
+      setState(() {});
       bookmarkedPostids.add(post_id);
-      var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+      var data = Firestore.instance
+          .collection("Users")
+          .where('UserID', isEqualTo: '1')
+          .getDocuments()
+          .then((data) {
         print("Data is: ${data.documents[0].documentID}");
 
         var list = List<int>();
         list.add(post_id);
-        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"bookmarks": FieldValue.arrayUnion(list)});
+        Firestore.instance
+            .collection('Users')
+            .document(data.documents[0].documentID)
+            .updateData({"bookmarks": FieldValue.arrayUnion(list)});
       });
     }
 
