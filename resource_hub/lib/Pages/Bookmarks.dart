@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:resourcehub/Logic/GlobalFunctions.dart';
 import 'package:share/share.dart';
 
 import '../Globals.dart';
@@ -20,6 +21,19 @@ class _BookmarksState extends State<Bookmarks> {
     super.initState();
     debugPrint("##### Init state called");
     getBookmarks();
+    getLikedPosts();
+  }
+
+  void getLikedPosts(){
+    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
+      likedPosts = new HashSet<int>();
+      var arr= data.documents[0].data['Likes'];
+      for(var p in arr){
+        likedPosts.add(p);
+      }
+//      print(likedPosts.toString());
+//      print(data.documents[0].data['bookmarks']);
+    });
   }
 
   void getBookmarks(){
@@ -49,7 +63,7 @@ class _BookmarksState extends State<Bookmarks> {
               isLoaded =true;
               setState(() {
                 bookmarkedPostsLength=arr.length;
-                debugPrint("getBookmarks called");
+                print(bookmarkedPosts.toString());
               });
             }
           }
@@ -60,8 +74,6 @@ class _BookmarksState extends State<Bookmarks> {
         var bdate = b['Timestamp'].millisecondsSinceEpoch;
         return -1*int.parse(adate.compareTo(bdate).toString());
       });
-
-      print(bookmarkedPostids.toString());
 //      print(data.documents[0].data['bookmarks']);
     });
   }
@@ -84,8 +96,9 @@ class _BookmarksState extends State<Bookmarks> {
 
   Future<dynamic> pressBookmark(int post_id) async{
     if(bookmarkedPostids.contains(post_id)){
-      bookmarkedPostids.remove(post_id);
       setState(() {
+        bookmarkedPostids.remove(post_id);
+        --bookmarkedPostsLength;
       });
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
@@ -96,8 +109,10 @@ class _BookmarksState extends State<Bookmarks> {
     }
     else{
       setState(() {
+        bookmarkedPostids.add(post_id);
+        ++bookmarkedPostsLength;
       });
-      bookmarkedPostids.add(post_id);
+
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
         var list = List<int>();
@@ -109,118 +124,179 @@ class _BookmarksState extends State<Bookmarks> {
     return;
   }
 
+  Future<dynamic> pressLike(int post_id, int index) async{
+    if(likedPosts.contains(post_id)){
+
+      setState(() {
+        likedPosts.remove(post_id);
+        --posts[index]['Likes'];
+      });
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayRemove(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+    else{
+      setState(() {
+        likedPosts.add(post_id);
+        ++posts[index]['Likes'];
+      });
+
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayUnion(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+
+    return;
+  }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Bookmarks"),
-      ),
-      body: Container(
-          color: Theme.of(context).canvasColor,
-          child:LiquidPullToRefresh(
-              onRefresh: (){
-                return Future<void>((){
-                  bookmarkedPosts=null;
-                  lastRefreshedTime = DateTime.now();
-                  print("--------Pulled to refresh at $lastRefreshedTime--------");
-                  getBookmarks();
-                });
-              },
-              child:(!isLoaded)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
-                itemCount:bookmarkedPostsLength,
-                controller: _controller,
-                itemBuilder: (context, index) {
-                  return Container(
-                    child: Card(
-                      color: Theme.of(context).cardColor,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0)),
-                      elevation: 2,
-                      child: Column(
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Container(
-                                width: 30,
-                              ),
-                              Text(
-                                "${bookmarkedPosts[index]['Title']}",
-                                style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87,fontSize: 18.0),
-                              ),
-                              GestureDetector(
-                                  behavior: HitTestBehavior.translucent,
-                                  onTap: () {
-                                    debugPrint("bookmarked");
-                                    pressBookmark(bookmarkedPosts[index]['post_id']);
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.only(right: 20),
-                                    child: Icon(
-                                      Icons.star_border,
-                                      color: bookmarkedPostids.contains(bookmarkedPosts[index]['post_id'])?Colors.amberAccent:Colors.black,
-                                    ),
-                                  )
-                              ),
-                            ],
-                          ),
-                          Padding(
+        appBar: AppBar(
+          title: Text("Bookmarks"),
+        ),
+        body: Container(
+            color: Theme.of(context).canvasColor,
+            child:LiquidPullToRefresh(
+                onRefresh: (){
+                  return Future<void>((){
+                    bookmarkedPosts=null;
+                    lastRefreshedTime = DateTime.now();
+                    print("--------Pulled to refresh at $lastRefreshedTime--------");
+                    getBookmarks();
+                  });
+                },
+                child:(!isLoaded)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
+                  itemCount:bookmarkedPostsLength,
+                  controller: _controller,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      child: Card(
+                        color: Theme.of(context).cardColor,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0)),
+                        elevation: 2,
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Container(
+                                  width: 30,
+                                ),
+                                Text(
+                                  "${bookmarkedPosts[index]['Title']}",
+                                  style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87,fontSize: 18.0),
+                                ),
+                                GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: () {
+                                      debugPrint("bookmarked");
+                                      pressBookmark(bookmarkedPosts[index]['post_id']);
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.only(right: 20),
+                                      child: Icon(
+                                        Icons.star_border,
+                                        color: bookmarkedPostids.contains(bookmarkedPosts[index]['post_id'])?Colors.amberAccent:Colors.black,
+                                      ),
+                                    )
+                                ),
+                              ],
+                            ),
+                            Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: RichText(
+                                    text:TextSpan(
+                                      text: "${bookmarkedPosts[index]['Link']}",
+                                      style: new TextStyle(color: Theme.of(context).accentColor),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.of(context).push(MaterialPageRoute(
+                                              builder: (BuildContext context) => MyWebView(
+                                                title: "${bookmarkedPosts[index]['Title']}",
+                                                selectedUrl: "${bookmarkedPosts[index]['Link']}",
+                                              )));
+                                        },
+                                    )
+                                )
+                            ),
+                            Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: RichText(
-                                  text:TextSpan(
-                                    text: "${bookmarkedPosts[index]['Link']}",
-                                    style: new TextStyle(color: Theme.of(context).accentColor),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        Navigator.of(context).push(MaterialPageRoute(
-                                            builder: (BuildContext context) => MyWebView(
-                                              title: "${bookmarkedPosts[index]['Title']}",
-                                              selectedUrl: "${bookmarkedPosts[index]['Link']}",
-                                            )));
-                                      },
-                                  )
-                              )
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Center(
-                              child: Container(
-                                child: Text("#${bookmarkedPosts[index]['Tags'][0]}",style: TextStyle(color: Colors.black87,),),
+                              child: Center(
+                                child: Container(
+                                  child: Text("#${bookmarkedPosts[index]['Tags'][0]}",style: TextStyle(color: Colors.black87,),),
 //                                            child: Container(),                                            // child: ListView.builder(
-                                //   scrollDirection: Axis.horizontal,
-                                //   itemCount: snapshot.data.documents[index]['Tags'].length,
-                                //   itemBuilder: (context,ind){
-                                //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                //   }
-                                // )
+                                  //   scrollDirection: Axis.horizontal,
+                                  //   itemCount: snapshot.data.documents[index]['Tags'].length,
+                                  //   itemBuilder: (context,ind){
+                                  //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                  //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                  //   }
+                                  // )
+                                ),
                               ),
                             ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: <Widget>[
-                              MaterialButton(
-                                onPressed: () {},
-                                child: Text("Kudos"),
-                              ),
-                              MaterialButton(
-                                onPressed: () {},
-                                child: Text("Comment"),
-                              ),
-                              new ShareButton(),
-                            ],
-                          ),
-                        ],
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: () {
+                                      debugPrint("Liked");
+                                      pressLike(posts[index]['post_id'], index);
+                                    },
+                                    child: Padding(
+                                        padding: EdgeInsets.only(right: 20),
+                                        child: Row(
+                                          children: <Widget>[
+                                            Icon(
+                                                likedPosts.contains(bookmarkedPosts[index]['post_id'])?Icons.favorite:Icons.favorite_border,
+                                                size: 20,
+                                                color: likedPosts.contains(bookmarkedPosts[index]['post_id'])?Colors.pink.shade300:Colors.black
+                                            ),
+                                            Text(
+                                              '  '+bookmarkedPosts[index]['Likes'].toString(),
+                                              style: new TextStyle(
+                                                  fontSize: 12
+                                              ),
+                                            )
+                                          ],
+                                        )
+                                    )
+                                ),
+                                MaterialButton(
+                                  onPressed: () {},
+                                  child: Text("Comment"),
+                                ),
+                                new ShareButton(),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              )
-          )
-      )
+                    );
+                  },
+                )
+            )
+        )
     );
   }
 }

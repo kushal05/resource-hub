@@ -1,8 +1,10 @@
 import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:resourcehub/Logic/GlobalFunctions.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
 import '../Globals.dart';
 import 'WebViewPage.dart';
@@ -21,14 +23,53 @@ class _HomePageState extends State<HomePage> {
 
   List<String> tags = [];
 
+  BannerAd _bannerAd;
+
+  static const MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
+    //keywords: <String>['education', 'research','programming','computer science','coding','motivation'],
+    childDirected: true,
+    nonPersonalizedAds: true,
+  );
+
+  BannerAd createBannerAd() {
+    return BannerAd(
+      adUnitId: "ca-app-pub-3696046528116630/4431045587",
+      size: AdSize.banner,
+      targetingInfo: targetingInfo,
+      listener: (MobileAdEvent event) {
+        print("BannerAd event $event");
+      },
+    );
+  }
+
 
   initState(){
     super.initState();
+    FirebaseAdMob.instance.initialize(appId: "ca-app-pub-3696046528116630~8597327786");
+    _bannerAd = createBannerAd()..load()..show(anchorOffset: 50);
     debugPrint("##### Init state called");
     getPosts();
     getBookmarks();
+    getLikedPosts();
   }
-  
+
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  void getLikedPosts(){
+    Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
+        likedPosts = new HashSet<int>();
+      var arr= data.documents[0].data['Likes'];
+      for(var p in arr){
+        likedPosts.add(p);
+      }
+      print(likedPosts.toString());
+//      print(data.documents[0].data['bookmarks']);
+    });
+  }
+
   void getBookmarks(){
     Firestore.instance.collection('Users')..where('UserID',isEqualTo: '1').getDocuments().then((data){
       bookmarkedPostids = new HashSet<int>();
@@ -36,7 +77,7 @@ class _HomePageState extends State<HomePage> {
       for(var p in arr){
         bookmarkedPostids.add(p);
       }
-      print(bookmarkedPostids.toString());
+//      print(bookmarkedPosts.toString());
 //      print(data.documents[0].data['bookmarks']);
     });
   }
@@ -48,7 +89,7 @@ class _HomePageState extends State<HomePage> {
 
       for(var p in temp){
         for(var tag in p.data['Tags']){
-          print("Tags are: $tag for title: ${p.data['Title']}");
+//          print("Tags are: $tag for title: ${p.data['Title']}");
           tags.add(tag);
         }
 
@@ -134,8 +175,8 @@ class _HomePageState extends State<HomePage> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: Container(
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).unselectedWidgetColor,
-                                      borderRadius: BorderRadius.circular(15.0)
+                                        color: Theme.of(context).unselectedWidgetColor,
+                                        borderRadius: BorderRadius.circular(15.0)
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -145,113 +186,134 @@ class _HomePageState extends State<HomePage> {
                         }),
                   ),
                 ),
-        Expanded(
-            flex: 10,
-            child: Container(
-                color: Theme.of(context).canvasColor,
-                child:LiquidPullToRefresh(
-                    onRefresh: (){
-                      return Future<void>((){
-                        posts=null;
-                        lastRefreshedTime = DateTime.now();
-                        print("--------Pulled to refresh at $lastRefreshedTime--------");
-                        getPosts();
-                      });
-                    },
-                    child:(posts==null)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
-                      itemCount:postsLength,
-                      controller: _controller,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          child: Card(
-                            color: Theme.of(context).cardColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                            elevation: 2,
-                            child: Column(
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 30,
-                                    ),
-                                    Text(
-                                      "${posts[index]['Title']}",
-                                      style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87,fontSize: 18.0),
-                                    ),
-                                    GestureDetector(
-                                        behavior: HitTestBehavior.translucent,
-                                        onTap: () {
-                                          debugPrint("bookmarked");
-                                          pressBookmark(posts[index]['post_id']);
-                                        },
-                                        child: Padding(
-                                          padding: EdgeInsets.only(right: 20),
-                                          child: Icon(
-                                              Icons.star_border,
-                                              color: bookmarkedPostids.contains(posts[index]['post_id'])?Colors.amberAccent:Colors.black,
-                                          ),
-                                        )
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: RichText(
-                                        text:TextSpan(
-                                          text: "${posts[index]['Link']}",
-                                          style: new TextStyle(color: Theme.of(context).accentColor),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () {
-                                              Navigator.of(context).push(MaterialPageRoute(
-                                                  builder: (BuildContext context) => MyWebView(
-                                                    title: "${posts[index]['Title']}",
-                                                    selectedUrl: "${posts[index]['Link']}",
-                                                  )));
-                                            },
-                                        )
-                                    )
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Center(
-                                    child: Container(
-                                      child: Text("#${posts[index]['Tags'][0]}",style: TextStyle(color: Colors.black87,),),
+                Expanded(
+                    flex: 10,
+                    child: Container(
+                        color: Theme.of(context).canvasColor,
+                        child:LiquidPullToRefresh(
+                            onRefresh: (){
+                              return Future<void>((){
+                                posts=null;
+                                lastRefreshedTime = DateTime.now();
+                                print("--------Pulled to refresh at $lastRefreshedTime--------");
+                                getPosts();
+                              });
+                            },
+                            child:(posts==null)?ListView(children:[Center(child:Text("Loading.."))]):ListView.builder(
+                              itemCount:postsLength,
+                              controller: _controller,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  child: Card(
+                                    color: Theme.of(context).cardColor,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10.0)),
+                                    elevation: 2,
+                                    child: Column(
+                                      children: <Widget>[
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Container(
+                                              width: 30,
+                                            ),
+                                            Text(
+                                              "${posts[index]['Title']}",
+                                              style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87,fontSize: 18.0),
+                                            ),
+                                            GestureDetector(
+                                                behavior: HitTestBehavior.translucent,
+                                                onTap: () {
+                                                  debugPrint("bookmarked");
+                                                  pressBookmark(posts[index]['post_id']);
+                                                },
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(right: 20),
+                                                  child: Icon(
+                                                    Icons.star_border,
+                                                    color: bookmarkedPostids.contains(posts[index]['post_id'])?Colors.amberAccent:Colors.black,
+                                                  ),
+                                                )
+                                            ),
+                                          ],
+                                        ),
+                                        Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: RichText(
+                                                text:TextSpan(
+                                                  text: "${posts[index]['Link']}",
+                                                  style: new TextStyle(color: Theme.of(context).accentColor),
+                                                  recognizer: TapGestureRecognizer()
+                                                    ..onTap = () {
+                                                      Navigator.of(context).push(MaterialPageRoute(
+                                                          builder: (BuildContext context) => MyWebView(
+                                                            title: "${posts[index]['Title']}",
+                                                            selectedUrl: "${posts[index]['Link']}",
+                                                          )));
+                                                    },
+                                                )
+                                            )
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Center(
+                                            child: Container(
+                                              child: Text("#${posts[index]['Tags'][0]}",style: TextStyle(color: Colors.black87,),),
 //                                            child: Container(),                                            // child: ListView.builder(
-                                      //   scrollDirection: Axis.horizontal,
-                                      //   itemCount: snapshot.data.documents[index]['Tags'].length,
-                                      //   itemBuilder: (context,ind){
-                                      //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                      //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                      //   }
-                                      // )
+                                              //   scrollDirection: Axis.horizontal,
+                                              //   itemCount: snapshot.data.documents[index]['Tags'].length,
+                                              //   itemBuilder: (context,ind){
+                                              //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                              //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                              //   }
+                                              // )
+                                            ),
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: <Widget>[
+                                            GestureDetector(
+                                                behavior: HitTestBehavior.translucent,
+                                                onTap: () {
+                                                  debugPrint("Liked");
+                                                  pressLike(posts[index]['post_id'], index);
+                                                },
+                                                child: Padding(
+                                                    padding: EdgeInsets.only(right: 20),
+                                                    child: Row(
+                                                      children: <Widget>[
+                                                        Icon(
+                                                            likedPosts.contains(posts[index]['post_id'])?Icons.favorite:Icons.favorite_border,
+                                                            size: 20,
+                                                            color: likedPosts.contains(posts[index]['post_id'])?Colors.pink.shade300:Colors.black
+                                                        ),
+                                                        Text(
+                                                          '  '+posts[index]['Likes'].toString(),
+                                                          style: new TextStyle(
+                                                              fontSize: 12
+                                                          ),
+                                                        )
+                                                      ],
+                                                    )
+                                                )
+                                            ),
+                                            MaterialButton(
+                                              onPressed: () {},
+                                              child: Text("Comment"),
+                                            ),
+                                            new ShareButton(),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Kudos"),
-                                    ),
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Comment"),
-                                    ),
-                                    new ShareButton(),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                                );
+                              },
+                            )
+                        )
                     )
-                )
-            )
-        ),
+                ),
               ],
             ),
             MyResources()
@@ -261,11 +323,51 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<dynamic> pressLike(int post_id, int index) async{
+    if(likedPosts.contains(post_id)){
+
+      setState(() {
+        likedPosts.remove(post_id);
+        --posts[index]['Likes'];
+      });
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayRemove(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+    else{
+      setState(() {
+        likedPosts.add(post_id);
+        ++posts[index]['Likes'];
+      });
+
+      Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+
+        var list = List<int>();
+        list.add(post_id);
+        Firestore.instance.collection('Users').document(data.documents[0].documentID).updateData({"Likes": FieldValue.arrayUnion(list)});
+      });
+      Firestore.instance.collection("Posts").where('post_id',isEqualTo: post_id).getDocuments().then((data){
+        print("Data is: ${data.documents[0].documentID}");
+        Firestore.instance.collection('Posts').document(data.documents[0].documentID).updateData({"Likes": posts[index]['Likes']});
+      });
+    }
+
+    return;
+  }
+
   Future<dynamic> pressBookmark(int post_id) async{
     if(bookmarkedPostids.contains(post_id)){
-      bookmarkedPostids.remove(post_id);
       setState(() {
-
+        bookmarkedPostids.remove(post_id);
       });
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
@@ -277,9 +379,9 @@ class _HomePageState extends State<HomePage> {
     }
     else{
       setState(() {
-
+        bookmarkedPostids.add(post_id);
       });
-      bookmarkedPostids.add(post_id);
+
       var data = Firestore.instance.collection("Users").where('UserID',isEqualTo: '1').getDocuments().then((data){
         print("Data is: ${data.documents[0].documentID}");
 
