@@ -1,14 +1,27 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:resourcehub/Globals.dart';
 import 'package:resourcehub/Logic/FadeAnimation.dart';
 import 'package:resourcehub/Logic/GlobalFunctions.dart';
-import 'package:resourcehub/Pages/Skeleton.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
 
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
   Auth _auth = Auth();
-  TextEditingController _loginUsername, _loginPassword;
+
+  final _loginEmail = TextEditingController();
+  final _loginPassword = TextEditingController();
+
+
+  @override
+  void dispose(){
+    _loginPassword.dispose();
+    _loginEmail.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +114,7 @@ class Login extends StatelessWidget {
                                   border: Border(bottom: BorderSide(color: Colors.grey[100]))
                               ),
                               child: TextField(
-                                controller: _loginUsername,
+                                controller: _loginEmail,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: "Username",
@@ -142,9 +155,10 @@ class Login extends StatelessWidget {
                       child: FlatButton(
                         color: Colors.transparent,
                           onPressed: () {
+
                              _auth.context = context;
                              _auth.loginType = LoginType.System;
-                             _auth.username = _loginUsername.text;
+                             _auth.email = _loginEmail.text;
                              _auth.password = _loginPassword.text;
                              _auth.login();
                           },
@@ -162,9 +176,6 @@ class Login extends StatelessWidget {
                                 ]
                             )
                         ),
-//                        child: Center(
-//                          child: Text("Login", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-//                        ),
                       child: FlatButton(
                         color: Colors.transparent,
                           onPressed: () {

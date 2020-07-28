@@ -36,15 +36,26 @@ List<BottomNavigationBarItem> getBottomNavBar(int _page){
   ];
 }
 
-
-//List<TabItem> tabItems = List.of([
-//  new TabItem(Icons.home, "Home", Colors.blue, labelStyle: TextStyle(color: Colors.blue)),
-//  new TabItem(Icons.bookmark, "Bookmarks", Colors.orange, labelStyle: TextStyle(color: Colors.orange)),
-//  new TabItem(Icons.add_circle_outline, "Add", Colors.red, labelStyle: TextStyle(color: Colors.red)),
-//  new TabItem(Icons.face, "Profile", Colors.cyan, labelStyle: TextStyle(color: Colors.cyan)),
-//  new TabItem(Icons.settings, "Settings", Colors.green, labelStyle: TextStyle(color: Colors.green)),
-//]);
-
+Widget errorAlertDialog(String title, String content, BuildContext context) {
+  return new AlertDialog(
+    elevation: 20.0,
+    title: Text(title, style: TextStyle(color: Colors.red)),
+    content: Text(content),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+    contentPadding: EdgeInsets.only(bottom: 0.0, left: 25.0, right: 20.0, top: 10.0),
+    actions: <Widget>[
+      FlatButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        textColor: Colors.red,
+        child: const Text('Okay, got it!'),
+      ),
+    ],
+  );
+}
 
 List<TabData> fancyTabItems = [
   TabData(iconData: Icons.home, title: "Home"),
