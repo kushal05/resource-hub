@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:resourcehub/Logic/FadeAnimation.dart';
 import 'package:resourcehub/Pages/Login.dart';
+import 'package:resourcehub/Pages/Skeleton.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -23,8 +25,21 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   bool hideIcon = false;
 
+  getUserLoggedInStatus() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isUserLoggedIn = prefs.getBool('isUserLoggedIn');
+    print('User login state is: $isUserLoggedIn');
+    return isUserLoggedIn;
+  }
+
   @override
   void initState() {
+
+    getUserLoggedInStatus().then((loggedIn){
+      if(loggedIn) {
+      Navigator.pushReplacement(context, PageTransition(type: PageTransitionType.fade, child: Skeleton()));
+      }
+    });
 
     super.initState();
 
@@ -148,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   FadeAnimation(1, Text("Welcome",
                     style: TextStyle(color: Colors.white, fontSize: 50),)),
                   SizedBox(height: 15,),
-                  FadeAnimation(1.3, Text("We promise that you'll have the most \nfuss-free time with us ever.",
+                  FadeAnimation(1.3, Text("We promise that you'll get \nthe best resources that you need",
                     style: TextStyle(color: Colors.white.withOpacity(.7), height: 1.4, fontSize: 20),)),
                   SizedBox(height: 180,),
                   FadeAnimation(1.6, AnimatedBuilder(

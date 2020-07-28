@@ -1,5 +1,6 @@
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 List<BottomNavigationBarItem> getBottomNavBar(int _page){
   return <BottomNavigationBarItem>[
@@ -53,6 +54,26 @@ Widget errorAlertDialog(String title, String content, BuildContext context) {
         textColor: Colors.red,
         child: const Text('Okay, got it!'),
       ),
+    ],
+  );
+}
+
+Widget exitAlertDialog(BuildContext context){
+  return AlertDialog(
+    content: Text('Are you sure you want to exit?'),
+    actions: <Widget>[
+      MaterialButton(
+        onPressed: () {
+          SystemNavigator.pop();
+        },
+        child: Text('Yes'),
+      ),
+      MaterialButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Text('No'),
+      )
     ],
   );
 }

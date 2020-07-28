@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:resourcehub/Pages/Login.dart';
 import 'package:resourcehub/Pages/MyResources.dart';
+import 'package:resourcehub/Pages/ReusableWidgets.dart';
 import 'package:resourcehub/Theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Globals.dart';
@@ -114,223 +115,228 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            "Welcome $username",
-            style: TextStyle(fontSize: 18),
-          ),
-          backgroundColor: Theme.of(context).primaryColor,
-          actions: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(right: 18.0),
-              child: Icon(Icons.search),
-            )
-          ],
-          bottom: TabBar(
-            isScrollable: false,
-            indicatorColor: Theme.of(context).accentColor,
-            tabs: [
-              Tab(
-                text: "Home",
-              ),
-              Tab(
-                text: "My Resources",
+    return WillPopScope(
+      onWillPop: () {
+        return showDialog(context: context, builder: (BuildContext context)=>exitAlertDialog(context));
+      },
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Text(
+              "Welcome $username",
+              style: TextStyle(fontSize: 18),
+            ),
+            backgroundColor: Theme.of(context).primaryColor,
+            actions: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(right: 18.0),
+                child: Icon(Icons.search),
               )
             ],
-          ),
-        ),
-        body: TabBarView(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    height: 200,
-                    color: Theme.of(context).canvasColor,
-                    child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: tags.length,
-                        itemBuilder: (context, index) {
-                          return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).unselectedWidgetColor,
-                                      borderRadius: BorderRadius.circular(15.0)
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(tags[index]),
-                                    )),
-                              ));
-                        }),
-                  ),
+            bottom: TabBar(
+              isScrollable: false,
+              indicatorColor: Theme.of(context).accentColor,
+              tabs: [
+                Tab(
+                  text: "Home",
                 ),
-                Expanded(
-                    flex: 10,
-                    child: Container(
-                        color: Theme.of(context).canvasColor,
-                        child: LiquidPullToRefresh(
-                            onRefresh: () {
-                              return Future<void>(() {
-                                posts = null;
-                                lastRefreshedTime = DateTime.now();
-                                print(
-                                    "--------Pulled to refresh at $lastRefreshedTime--------");
-                                getPosts();
-                              });
-                            },
-                            child: (posts == null)
-                                ? Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                        Center(
-                                            child: Text(
-                                          "Getting posts for you..",
-                                          style: TextStyles.title,
-                                        )),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: CircularProgressIndicator(),
-                                        )
-                                      ])
-                                : ListView.builder(
-                                    itemCount: postsLength,
-                                    controller: _controller,
-                                    itemBuilder: (context, index) {
-                                      return Container(
-                                        child: Card(
-                                          color: Theme.of(context).cardColor,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0)),
-                                          elevation: 2,
-                                          child: Column(
-                                            children: <Widget>[
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Container(
-                                                    width: 30,
-                                                  ),
-                                                  Text(
-                                                    "${posts[index]['Title']}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.black87,
-                                                        fontSize: 18.0),
-                                                  ),
-                                                  GestureDetector(
-                                                      behavior: HitTestBehavior
-                                                          .translucent,
-                                                      onTap: () {
-                                                        debugPrint(
-                                                            "bookmarked");
-                                                        pressBookmark(
-                                                            posts[index]
-                                                                ['post_id']);
-                                                      },
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                right: 20),
-                                                        child: Icon(
-                                                          Icons.star_border,
-                                                          color: bookmarkedPostids
-                                                                  .contains(posts[
-                                                                          index]
-                                                                      [
-                                                                      'post_id'])
-                                                              ? Colors
-                                                                  .amberAccent
-                                                              : Colors.black,
-                                                        ),
-                                                      )),
-                                                ],
-                                              ),
-                                              Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: RichText(
-                                                      text: TextSpan(
-                                                    text:
-                                                        "${posts[index]['Link']}",
-                                                    style: new TextStyle(
-                                                        color: Theme.of(context)
-                                                            .accentColor),
-                                                    recognizer:
-                                                        TapGestureRecognizer()
-                                                          ..onTap = () {
-                                                            Navigator.of(context).push(
-                                                                MaterialPageRoute(
-                                                                    builder: (BuildContext
-                                                                            context) =>
-                                                                        MyWebView(
-                                                                          title:
-                                                                              "${posts[index]['Title']}",
-                                                                          selectedUrl:
-                                                                              "${posts[index]['Link']}",
-                                                                        )));
-                                                          },
-                                                  ))),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Center(
-                                                  child: Container(
-                                                    child: Text(
-                                                      "#${posts[index]['Tags'][0]}",
-                                                      style: TextStyle(
-                                                        color: Colors.black87,
-                                                      ),
-                                                    ),
-//                                            child: Container(),                                            // child: ListView.builder(
-                                      //   scrollDirection: Axis.horizontal,
-                                      //   itemCount: snapshot.data.documents[index]['Tags'].length,
-                                      //   itemBuilder: (context,ind){
-                                      //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                      //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
-                                      //   }
-                                      // )
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Kudos"),
-                                    ),
-                                    MaterialButton(
-                                      onPressed: () {},
-                                      child: Text("Comment"),
-                                    ),
-                                    new ShareButton(),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    )
+                Tab(
+                  text: "My Resources",
                 )
-            )
-        ),
               ],
             ),
-            MyResources()
-          ],
+          ),
+          body: TabBarView(
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      height: 200,
+                      color: Theme.of(context).canvasColor,
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: tags.length,
+                          itemBuilder: (context, index) {
+                            return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).unselectedWidgetColor,
+                                        borderRadius: BorderRadius.circular(15.0)
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(tags[index]),
+                                      )),
+                                ));
+                          }),
+                    ),
+                  ),
+                  Expanded(
+                      flex: 10,
+                      child: Container(
+                          color: Theme.of(context).canvasColor,
+                          child: LiquidPullToRefresh(
+                              onRefresh: () {
+                                return Future<void>(() {
+                                  posts = null;
+                                  lastRefreshedTime = DateTime.now();
+                                  print(
+                                      "--------Pulled to refresh at $lastRefreshedTime--------");
+                                  getPosts();
+                                });
+                              },
+                              child: (posts == null)
+                                  ? Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                          Center(
+                                              child: Text(
+                                            "Getting posts for you..",
+                                            style: TextStyles.title,
+                                          )),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: CircularProgressIndicator(),
+                                          )
+                                        ])
+                                  : ListView.builder(
+                                      itemCount: postsLength,
+                                      controller: _controller,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          child: Card(
+                                            color: Theme.of(context).cardColor,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0)),
+                                            elevation: 2,
+                                            child: Column(
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      width: 30,
+                                                    ),
+                                                    Text(
+                                                      "${posts[index]['Title']}",
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: Colors.black87,
+                                                          fontSize: 18.0),
+                                                    ),
+                                                    GestureDetector(
+                                                        behavior: HitTestBehavior
+                                                            .translucent,
+                                                        onTap: () {
+                                                          debugPrint(
+                                                              "bookmarked");
+                                                          pressBookmark(
+                                                              posts[index]
+                                                                  ['post_id']);
+                                                        },
+                                                        child: Padding(
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                                  right: 20),
+                                                          child: Icon(
+                                                            Icons.star_border,
+                                                            color: bookmarkedPostids
+                                                                    .contains(posts[
+                                                                            index]
+                                                                        [
+                                                                        'post_id'])
+                                                                ? Colors
+                                                                    .amberAccent
+                                                                : Colors.black,
+                                                          ),
+                                                        )),
+                                                  ],
+                                                ),
+                                                Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(8.0),
+                                                    child: RichText(
+                                                        text: TextSpan(
+                                                      text:
+                                                          "${posts[index]['Link']}",
+                                                      style: new TextStyle(
+                                                          color: Theme.of(context)
+                                                              .accentColor),
+                                                      recognizer:
+                                                          TapGestureRecognizer()
+                                                            ..onTap = () {
+                                                              Navigator.of(context).push(
+                                                                  MaterialPageRoute(
+                                                                      builder: (BuildContext
+                                                                              context) =>
+                                                                          MyWebView(
+                                                                            title:
+                                                                                "${posts[index]['Title']}",
+                                                                            selectedUrl:
+                                                                                "${posts[index]['Link']}",
+                                                                          )));
+                                                            },
+                                                    ))),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Center(
+                                                    child: Container(
+                                                      child: Text(
+                                                        "#${posts[index]['Tags'][0]}",
+                                                        style: TextStyle(
+                                                          color: Colors.black87,
+                                                        ),
+                                                      ),
+//                                            child: Container(),                                            // child: ListView.builder(
+                                        //   scrollDirection: Axis.horizontal,
+                                        //   itemCount: snapshot.data.documents[index]['Tags'].length,
+                                        //   itemBuilder: (context,ind){
+                                        //     debugPrint("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                        //     return Text("#${snapshot.data.documents[index]['Tags'][ind]}");
+                                        //   }
+                                        // )
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      MaterialButton(
+                                        onPressed: () {},
+                                        child: Text("Kudos"),
+                                      ),
+                                      MaterialButton(
+                                        onPressed: () {},
+                                        child: Text("Comment"),
+                                      ),
+                                      new ShareButton(),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                  )
+              )
+          ),
+                ],
+              ),
+              MyResources()
+            ],
+          ),
         ),
       ),
     );

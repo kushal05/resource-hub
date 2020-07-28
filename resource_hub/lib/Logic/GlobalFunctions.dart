@@ -73,6 +73,9 @@ class Auth {
         print("Got userId from signIn $userId");
         SharedPreferences pref = await SharedPreferences.getInstance();
         pref.setString('userName', userId).then((value) {
+          pref.setBool('isUserLoggedIn', true);
+          Navigator.pop(this.context);
+          Navigator.pop(this.context);
           Navigator.of(this.context).push(
             MaterialPageRoute(
               builder: (context) {
@@ -101,6 +104,7 @@ class Auth {
         SharedPreferences pref =
         await SharedPreferences.getInstance();
         pref.setString('userName', userName).then((value) {
+          pref.setBool('isUserLoggedIn', true);
           Navigator.of(this.context).push(
             MaterialPageRoute(
               builder: (context) {
